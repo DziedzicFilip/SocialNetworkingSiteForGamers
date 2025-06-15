@@ -13,6 +13,9 @@
         <a class="nav-link" href="#">Matches</a>
       </li>
       <li class="nav-item">
+        <a class="nav-link" href="{{ route('profile.edit') }}">Edit Profile</a>
+      </li>
+      <li class="nav-item">
         <form id="logout-form" method="POST" action="{{ route('logout') }}" style="display: none;">
           @csrf
         </form>

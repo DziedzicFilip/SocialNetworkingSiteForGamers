@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,19 +24,42 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
-    {
-        $request->user()->fill($request->validated());
+    public function update(Request $request)
+{
+    $user = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
+    $validated = $request->validate([
+        'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+        'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+    ]);
 
-        $request->user()->save();
+    $user->username = $validated['username'];
+    $user->email = $validated['email'];
+    $user->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    return back()->with('status', 'profile-updated');
+}
+
+
+public function updatePassword(Request $request)
+{
+    //dd('działa', $request->all());
+    $user = $request->user();
+
+    $request->validate([
+        'current_password' => ['required'],
+        'password' => ['required', 'string', 'min:8', 'confirmed'],
+    ]);
+
+    if (!Hash::check($request->current_password, $user->password_hash)) {
+        return back()->withErrors(['current_password' => 'Current password is incorrect.']);
     }
 
+    $user->password_hash = Hash::make($request->password);
+    $user->save();
+
+    return back()->with('status', 'password-updated');
+}
     /**
      * Delete the user's account.
      */
