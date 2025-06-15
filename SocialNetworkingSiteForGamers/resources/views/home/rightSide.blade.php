@@ -1,4 +1,4 @@
-<div class="col-md-3">
+
     <div class="card p-3 mb-3 shadow-sm">
       <h5 class="text-primary"><i class="bi bi-check-circle"></i> Scrims for Approval</h5>
       <ul class="list-unstyled">
@@ -26,4 +26,4 @@
        
       </ul>
     </div>
-  </div>
+ 

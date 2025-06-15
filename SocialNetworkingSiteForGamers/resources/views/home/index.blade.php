@@ -7,9 +7,17 @@
 @endpush
 
 @section('content')
-<div class="row">
-  @include('home.leftSide')
-  @include('home.mid')
-  @include('home.rightSide')
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      @include('home.leftSide')
+    </div>
+    <div class="col-md-6 main-content">
+      @include('home.mid')
+    </div>
+    <div class="col-md-3">
+      @include('home.rightSide')
+    </div>
+  </div>
 </div>
 @endsection
