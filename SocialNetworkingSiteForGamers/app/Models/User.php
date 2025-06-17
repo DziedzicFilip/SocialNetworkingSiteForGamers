@@ -38,4 +38,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(GameMatch::class, 'winner_user_id');
     }
+    public function getAuthPassword()
+{
+    return $this->password_hash;
+}
 }

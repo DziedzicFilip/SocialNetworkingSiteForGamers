@@ -8,49 +8,75 @@
 </div>
 <div class="card text-center p-4 mb-3">
   <h5>Add Announcement</h5>
-  <form class="form-container" action="#" method="POST">
-    
+  <form action="{{ route('posts.store') }}" method="POST" class="text-start mt-3">
+    @csrf
+    <label for="type" class="form-label">Type:</label>
+    <select name="type" id="type" class="form-select mb-2" required onchange="togglePlayersField()">
+        <option value="discussion">Discussion</option>
+        <option value="casual">Looking for Gamers </option>
+        <option value="team">Team recruitment</option>
+    </select>
+    <!-- Wybór gry -->
+   <label for="game_id" class="form-label">Game:</label>
+<select name="game_id" id="game_id" class="form-select mb-2" >
+    <option value="">Select game...</option>
+    @foreach($games as $game)
+        <option value="{{ $game->id }}">{{ $game->name }}</option>
+    @endforeach
+</select>
+    <label for="title" class="form-label">Title:</label>
+<input type="text" name="title" id="title" class="form-control mb-2" maxlength="255" required>
+    <!-- Opis -->
+    <label for="content" class="form-label">Description:</label>
+    <textarea name="content" id="content" class="form-control mb-2" rows="3" required></textarea>
 
-   
-    <label for="game">Game:</label>
-    <select name="game" id="game" required>
-      <option value="">Select game...</option>
-      <option value="lol">League of Legends</option>
-      <option value="csgo">CS:GO</option>
-      <option value="valorant">Valorant</option>
-      <option value="fifa">FIFA</option>
-      <option value="dota2">Dota 2</option>
+    <!-- Data grania -->
+  
+    <!-- Typ posta -->
      
-    </select>
 
- 
-    <label for="match_type">Match type:</label>
-    <select name="match_type" id="match_type" required>
-      <option value="">Select...</option>
-      <option value="single">Single match</option>
-      <option value="tournament">Tournament</option>
-      <option value="league">League</option>
+    <!-- Wybór drużyny (jeśli jesteś liderem) -->
+    @if($leaderTeams->count() > 0)
+    <label for="team_id" class="form-label">Your team (if you are a leader):</label>
+    <select name="team_id" id="team_id" class="form-select mb-2">
+        <option value="">None</option>
+        @foreach($leaderTeams as $team)
+            <option value="{{ $team->id }}">{{ $team->name }}</option>
+        @endforeach
     </select>
-    <div class="mb-3">
-      <label for="description" class="form-label">Description</label>
-      <textarea id="description" name="description" class="form-control" required></textarea>
+@endif
+
+    <!-- Liczba szukanych graczy -->
+    <div id="playersField">
+       <label for="play_time" class="form-label">Date of playing:</label>
+<input type="datetime-local" name="play_time" id="play_time" class="form-control mb-2">
+
+        <label for="max_players" class="form-label">Number of players wanted:</label>
+        <input type="number" name="max_players" id="max_players" class="form-control mb-2" min="1">
     </div>
-    <div id="availability-container">
-      <div class="mb-3 p-3 shadow-sm rounded">
-        <label for="availability_start" class="form-label">
-          Availability Start
-        </label>
-        <input type="datetime-local" name="availability_start[]" class="form-control" required>
-        <label for="availability_end" class="form-label mt-2">
-          Availability End
-        </label>
-        <input type="datetime-local" name="availability_end[]" class="form-control" required>
-      </div>
+    <button type="submit" class="btn btn-primary w-100 mt-2">Add Announcement</button>
+    @if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
     </div>
-    <div class="d-flex justify-content-center">
-      <button type="button" class="btn btn-secondary mb-3" onclick="addAvailability()">+</button>
-    </div>
-    <button type="submit" class="btn btn-primary">Add</button>
-  </form>
+@endif
+</form>
+<script>
+function togglePlayersField() {
+    const type = document.getElementById('type').value;
+    const playersField = document.getElementById('playersField');
+    if(type === 'discussion') {
+        playersField.style.display = 'none';
+    } else {
+        playersField.style.display = 'block';
+    }
+}
+// Wywołaj na starcie, jeśli edytujesz formularz lub masz domyślną wartość
+document.addEventListener('DOMContentLoaded', togglePlayersField);
+</script>
 </div>
   

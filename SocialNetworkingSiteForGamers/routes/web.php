@@ -3,7 +3,8 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PostController;
 Route::get('/', function () {
     return view('welcome');
 });
@@ -23,13 +24,10 @@ Route::get('/teams/my', function () {
     return view('Teams.index'); 
 })->middleware(['auth'])->name('teams.my');
 
-Route::get('/home', function () {
-    return view('home.index');
-})->middleware(['auth'])->name('home');
+Route::get('/home', [HomeController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('home');
 
-Route::get('/home', function () {
-    return view('home.index');
-})->middleware(['auth'])->name('home');
 
 Route::get('/teams/{id}/details', function ($id) {
     
@@ -44,4 +42,8 @@ Route::get('/profile/me', [ProfileController::class, 'myProfile'])
 Route::get('/matches', function () {
     return view('Matches.index');
 })->middleware(['auth'])->name('matches.index');
+
+
+Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
+Route::post('/posts/{id}/apply', [PostController::class, 'apply'])->name('posts.apply');
 require __DIR__.'/auth.php';

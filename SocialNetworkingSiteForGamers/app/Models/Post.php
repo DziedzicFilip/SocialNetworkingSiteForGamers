@@ -10,7 +10,7 @@ class Post extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'user_id', 'game_id', 'content', 'created_at', 'type', 'max_players', 'current_players', 'visible'
+        'user_id', 'game_id', 'content', 'created_at', 'type', 'max_players', 'current_players', 'visible','play_time'
     ];
 
     public function user()
@@ -27,4 +27,8 @@ class Post extends Model
     {
         return $this->hasMany(PostParticipant::class, 'post_id');
     }
+    public function team()
+{
+    return $this->belongsTo(\App\Models\Team::class, 'team_id');
+}
 }
