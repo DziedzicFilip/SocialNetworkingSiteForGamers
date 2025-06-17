@@ -2,24 +2,16 @@
 
   
     <div class="card text-center p-3 mb-3">
-  <img src="../IMG/lol-logo.png" class="profile-img mx-auto" alt="team logo" />
-  <h5 class="mt-3">Nickname</h5>
-  <p class="text-muted">Team Name</p>
+  <img src="../IMG/logoArcadeUnionDefault.png" class="profile-img mx-auto" alt="team logo" />
+ <h5 class="mt-3">{{ Auth::user()->username }}</h5>
+  
 </div>
 <div class="card text-center p-4 mb-3">
   <h5>Add Announcement</h5>
   <form class="form-container" action="#" method="POST">
-    <!-- Game type 
-    <label for="game_type">Game type:</label>
-    <select name="game_type" id="game_type" required>
-      <option value="">Select...</option>
-      <option value="fps">FPS</option>
-      <option value="moba">MOBA</option>
-      <option value="rpg">RPG</option>
-      <option value="sport">Sports</option>
-    </select>-->
+    
 
-    <!-- Specific game -->
+   
     <label for="game">Game:</label>
     <select name="game" id="game" required>
       <option value="">Select game...</option>
@@ -28,10 +20,10 @@
       <option value="valorant">Valorant</option>
       <option value="fifa">FIFA</option>
       <option value="dota2">Dota 2</option>
-      <!-- Add more games as needed -->
+     
     </select>
 
-    <!-- Match type -->
+ 
     <label for="match_type">Match type:</label>
     <select name="match_type" id="match_type" required>
       <option value="">Select...</option>

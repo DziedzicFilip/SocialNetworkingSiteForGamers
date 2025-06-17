@@ -44,7 +44,7 @@
     @endif
 
     <div class="arcade-card">
-        <img src="{{ asset('IMG/arcade-logo.png') }}" alt="ArcadeUnion Logo" class="arcade-logo">
+        
         <div class="arcade-title">Welcome to ArcadeUnion</div>
         <p class="mb-4">The social network for gamers.<br>
         Connect, create teams, join tournaments and share your passion for gaming!</p>

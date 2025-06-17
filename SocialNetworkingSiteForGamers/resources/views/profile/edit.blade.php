@@ -15,12 +15,13 @@
                 <h2 class="mb-4 text-primary">Profile</h2>
                 @include('profile.partials.update-profile-information-form')
             </div>
+           
             <div class="card p-4 mb-4 shadow-sm">
                 @include('profile.partials.update-password-form')
             </div>
-            <div class="card p-4 mb-4 shadow-sm">
-                @include('profile.partials.delete-user-form')
-            </div>
+            
+         
+            
         </div>
     </div>
 </div>
