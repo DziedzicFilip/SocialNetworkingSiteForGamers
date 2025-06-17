@@ -109,17 +109,27 @@ public function myProfile()
     $matchIds = MatchParticipant::where('user_id', $user->id)->pluck('match_id');
     $matches = GameMatch::whereIn('id', $matchIds)->with('game')->get();
 
-    // Wygrane mecze (gdzie drużyna użytkownika wygrała)
+    // ID drużyn użytkownika
     $userTeamIds = $user->teams->pluck('teams.id')->toArray();
-    $wins = GameMatch::whereIn('id', $matchIds)
+
+    // Wygrane mecze solo (gdzie user wygrał indywidualnie)
+    $soloWins = GameMatch::whereIn('id', $matchIds)
+        ->where('winner_user_id', $user->id)
+        ->count();
+
+    // Wygrane mecze drużynowe (gdzie wygrała drużyna użytkownika)
+    $teamWins = GameMatch::whereIn('id', $matchIds)
         ->whereIn('winner_team_id', $userTeamIds)
         ->count();
 
+    $wins = $soloWins + $teamWins;
+
+    // Ogólna statystyka
     $totalMatches = $matches->count();
     $losses = $totalMatches - $wins;
     $winRate = $totalMatches > 0 ? round(($wins / $totalMatches) * 100) : 0;
 
-    // Gry, w których użytkownik grał
+    // Gry, w których użytkownik brał udział
     $gamesPlayed = $matches->groupBy('game_id')->map->count();
     $games = Game::whereIn('id', $gamesPlayed->keys())->get();
 
@@ -133,5 +143,6 @@ public function myProfile()
         'user', 'teamsCount', 'totalMatches', 'wins', 'losses', 'winRate', 'gamesPlayed', 'games', 'recentMatches'
     ));
 }
+
       
 }
