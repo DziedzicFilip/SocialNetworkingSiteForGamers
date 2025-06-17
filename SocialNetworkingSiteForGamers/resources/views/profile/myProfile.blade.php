@@ -56,10 +56,10 @@
 @section('content')
 <div class="container py-4">
   <div class="profile-header">
-    <img src="{{ asset(Auth::user()->profile_image ?? 'IMG/default-avatar.jpg') }}" alt="Your Avatar" class="profile-avatar">
+    <img src="{{ asset($user->profile_image ?? 'IMG/default-avatar.jpg') }}" alt="Your Avatar" class="profile-avatar">
     <div>
-        <div class="profile-username">{{ Auth::user()->username }}</div>
-        <div class="profile-bio">{{ Auth::user()->bio }}</div>
+        <div class="profile-username">{{ $user->username }}</div>
+<div class="profile-bio">{{ $user->bio }}</div>
         <a href="{{ route('profile.edit') }}" class="btn btn-outline-primary mt-3">Edit Profile</a>
     </div>
   </div>

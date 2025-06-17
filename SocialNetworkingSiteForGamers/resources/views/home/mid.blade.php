@@ -88,22 +88,35 @@
 
       @if($post->type === 'casual')
         <div>
-          <strong>Players wanted:</strong> {{ $post->max_players ?? '-' }}<br>
+          
           <strong>Play date:</strong> {{ $post->expires_at ? \Carbon\Carbon::parse($post->expires_at)->format('Y-m-d H:i') : '-' }}
         </div>
-        <form action="{{ route('posts.apply', $post->id) }}" method="POST" class="mt-2">
-          @csrf
-          <button type="submit" class="btn btn-outline-primary mb-2">Sign up</button>
-        </form>
+        @if($post->max_players)
+    <div class="mb-2">
+        <strong>Players:</strong> {{ $post->current_players }}/{{ $post->max_players }}
+    </div>
+@endif
+        @if($post->already_applied)
+    <div class="alert alert-info mt-2 mb-0 p-1">Already Sign up</div>
+@else
+    <form action="{{ route('posts.apply', $post->id) }}" method="POST" class="mt-2">
+        @csrf
+        <button type="submit" class="btn btn-outline-primary mb-2">Sign UP</button>
+    </form>
+@endif
       @elseif($post->type === 'team')
         <div>
           <strong>Recruitment for team!</strong>
         </div>
         @if(Auth::user() && Auth::user()->teams->count() < 0)
-          <form action="{{ route('posts.apply', $post->id) }}" method="POST" class="mt-2">
-            @csrf
-            <button type="submit" class="btn btn-warning mb-2">Sign up</button>
-          </form>
+        @if($post->already_applied)
+    <div class="alert alert-info mt-2 mb-0 p-1">Already Sign up</div>
+@else
+    <form action="{{ route('posts.apply', $post->id) }}" method="POST" class="mt-2">
+        @csrf
+        <button type="submit" class="btn btn-outline-primary mb-2">Sign  up</button>
+    </form>
+@endif
         @else
           <div class="text-muted">You are already in a team.</div>
         @endif

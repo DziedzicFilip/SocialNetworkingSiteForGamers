@@ -143,6 +143,38 @@ public function myProfile()
         'user', 'teamsCount', 'totalMatches', 'wins', 'losses', 'winRate', 'gamesPlayed', 'games', 'recentMatches'
     ));
 }
+public function show($id)
+{
+    $user = User::findOrFail($id);
 
-      
+    // Pobierz wszystkie mecze, w których użytkownik brał udział
+    $matchIds = MatchParticipant::where('user_id', $user->id)->pluck('match_id');
+    $matches = GameMatch::whereIn('id', $matchIds)->get();
+
+    // Wygrane mecze (gdzie użytkownik jest w zwycięskiej drużynie lub jako zwycięzca)
+    $userTeamIds = $user->teams()->pluck('teams.id')->toArray();
+    $wins = GameMatch::whereIn('id', $matchIds)
+        ->where(function($q) use ($user, $userTeamIds) {
+            $q->whereIn('winner_team_id', $userTeamIds)
+              ->orWhere('winner_user_id', $user->id);
+        })->count();
+
+    $totalMatches = $matches->count();
+    $losses = $totalMatches - $wins;
+    $winRate = $totalMatches > 0 ? round(($wins / $totalMatches) * 100) : 0;
+
+    // Liczba drużyn użytkownika
+    $teamsCount = $user->teams()->count();
+
+    // Gry, w których użytkownik grał
+    $gamesPlayed = $matches->groupBy('game_id')->map->count();
+    $games = Game::whereIn('id', $gamesPlayed->keys())->get();
+
+    // Ostatnie mecze
+    $recentMatches = $matches->sortByDesc('match_date')->take(5);
+
+    return view('profile.myProfile', compact(
+        'user', 'totalMatches', 'wins', 'losses', 'winRate', 'teamsCount', 'games', 'gamesPlayed', 'recentMatches'
+    ));
+}
 }

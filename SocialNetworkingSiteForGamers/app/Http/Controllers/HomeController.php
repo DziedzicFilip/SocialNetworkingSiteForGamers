@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Team;
 use App\Models\Game;
 use \App\Models\Post;
+use App\Models\PostParticipant;
 class HomeController extends Controller
 {
     public function index(Request $request)
@@ -18,7 +19,8 @@ class HomeController extends Controller
             $leaderTeams = Team::where('leader_id', $user->id)->get();
         }
          $games = Game::all();
-           $posts = Post::with(['game', 'user', 'team'])
+
+        $posts = Post::with(['game', 'user', 'team'])
         ->where('visible', 1)
         ->when($request->filter_title, fn($q) =>
             $q->where('title', 'like', '%' . $request->filter_title . '%'))
@@ -32,6 +34,35 @@ class HomeController extends Controller
             $q->whereDate('created_at', $request->filter_date))
         ->orderBy('created_at', $request->filter_sort === 'asc' ? 'asc' : 'desc')
         ->get();
-     return view('home.index', compact('leaderTeams', 'games','teams' ,'posts'));
+        $userId = Auth::id();
+foreach ($posts as $post) {
+    $post->already_applied = PostParticipant::where('post_id', $post->id)
+        ->where('user_id', $userId)
+        ->exists();
+}
+$pendingRequests = PostParticipant::with(['user', 'post'])
+    ->whereHas('post', function($q) use ($user) {
+        $q->where('user_id', $user->id);
+    })
+    ->where('status', 'pending')
+    ->get();
+   $participantPostIds = PostParticipant::where('user_id', $user->id)
+        ->where('status', 'accepted')
+        ->pluck('post_id')
+        ->toArray();
+     $upcomingEvents = Post::where(function($q) use ($user, $participantPostIds) {
+        $q->where('user_id', $user->id)
+          ->orWhereIn('id', $participantPostIds);
+    })
+    ->whereColumn('current_players', 'max_players')
+    ->where('play_time', '>', now()) 
+    ->orderBy('play_time')
+    ->get();
+
+
+     return view('home.index', compact('leaderTeams', 'games','teams' ,'posts','pendingRequests','upcomingEvents'));
+     
     }
+
+    
 }

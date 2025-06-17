@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Post;
-
+use App\Models\PostParticipant;
 class PostController extends Controller
 {
     public function store(Request $request)
@@ -37,10 +37,53 @@ class PostController extends Controller
        return redirect()->back()->with('status', 'Post added!');
     }
 
-    public function apply($id)
-    {
-        // Tutaj logika zgłoszenia się do posta (np. zapis do post_participants)
-        // ...
-        return back()->with('status', 'Zgłoszenie wysłane!');
+   public function apply($id)
+{
+    $user = Auth::user();
+
+    $exists = PostParticipant::where('post_id', $id)
+        ->where('user_id', $user->id)
+        ->exists();
+
+    if ($exists) {
+        return back()->with('status', 'Już zgłosiłeś się do tego wydarzenia!');
     }
+
+    PostParticipant::create([
+        'post_id' => $id,
+        'user_id' => $user->id,
+        'status' => 'pending',
+        'joined_at' => now(),
+    ]);
+
+    return back()->with('status', 'Zgłoszenie wysłane!');
+}
+    public function acceptRequest($id)
+{
+    $request = PostParticipant::findOrFail($id);
+    $request->status = 'accepted';
+    $request->save();
+
+    // Zwiększ current_players w poście
+    $post = $request->post;
+    $post->current_players = $post->current_players + 1;
+
+    // Jeśli osiągnięto limit graczy, ukryj post
+    if ($post->max_players && $post->current_players >= $post->max_players) {
+        $post->visible = 0;
+    }
+
+    $post->save();
+
+    return back()->with('status', 'Request accepted!');
+}
+
+public function rejectRequest($id)
+{
+    $request = PostParticipant::findOrFail($id);
+    $request->status = 'rejected';
+    $request->save();
+
+    return back()->with('status', 'Request rejected!');
+}
 }

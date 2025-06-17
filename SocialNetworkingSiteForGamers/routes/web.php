@@ -42,8 +42,11 @@ Route::get('/profile/me', [ProfileController::class, 'myProfile'])
 Route::get('/matches', function () {
     return view('Matches.index');
 })->middleware(['auth'])->name('matches.index');
-
+Route::post('/posts/{id}/apply', [PostController::class, 'apply'])->name('posts.apply');
+Route::post('/requests/{id}/accept', [PostController::class, 'acceptRequest'])->name('posts.acceptRequest');
+Route::post('/requests/{id}/reject', [PostController::class, 'rejectRequest'])->name('posts.rejectRequest');
 
 Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
 Route::post('/posts/{id}/apply', [PostController::class, 'apply'])->name('posts.apply');
+Route::get('/profile/{id}', [ProfileController::class, 'show'])->name('profile.show');
 require __DIR__.'/auth.php';
