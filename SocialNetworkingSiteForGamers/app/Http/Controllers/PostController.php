@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Post;
 use App\Models\PostParticipant;
+use App\Models\TeamMember;
+use App\Models\Team;
 class PostController extends Controller
 {
     public function store(Request $request)
@@ -58,22 +60,48 @@ class PostController extends Controller
 
     return back()->with('status', 'Zgłoszenie wysłane!');
 }
-    public function acceptRequest($id)
+public function acceptRequest($id)
 {
     $request = PostParticipant::findOrFail($id);
+    $post = $request->post;
+    $userId = $request->user_id;
+
+    // Sprawdź, czy user już jest w teamie tej gry
+    $userTeams = Team::whereHas('members', function($q) use ($userId) {
+        $q->where('user_id', $userId);
+    })->where('game_id', $post->game_id)->count();
+
+    if ($userTeams > 0) {
+        // Odrzuć akceptację, bo user już jest w teamie tej gry
+        return back()->with('status', 'Too late – user already joined another team in this game.');
+    }
+
+    // Akceptuj zgłoszenie
     $request->status = 'accepted';
     $request->save();
 
-    // Zwiększ current_players w poście
-    $post = $request->post;
     $post->current_players = $post->current_players + 1;
-
-    // Jeśli osiągnięto limit graczy, ukryj post
     if ($post->max_players && $post->current_players >= $post->max_players) {
         $post->visible = 0;
     }
-
     $post->save();
+
+    // Dodaj do teamu
+    if ($post->type === 'team' && $post->team_id) {
+        TeamMember::firstOrCreate([
+            'team_id' => $post->team_id,
+            'user_id' => $userId,
+        ]);
+    }
+
+    // Oznacz inne zgłoszenia tego usera do innych teamów w tej grze jako "expired"
+    PostParticipant::where('user_id', $userId)
+        ->whereHas('post', function($q) use ($post) {
+            $q->where('game_id', $post->game_id)
+              ->where('id', '!=', $post->id);
+        })
+        ->where('status', 'pending')
+        ->update(['status' => 'expired']);
 
     return back()->with('status', 'Request accepted!');
 }
@@ -86,4 +114,7 @@ public function rejectRequest($id)
 
     return back()->with('status', 'Request rejected!');
 }
+
+
+
 }

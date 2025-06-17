@@ -19,7 +19,13 @@ class HomeController extends Controller
             $leaderTeams = Team::where('leader_id', $user->id)->get();
         }
          $games = Game::all();
-
+        $userTeams = collect();
+if ($user) {
+    $userTeams = Team::with('game')
+    ->whereHas('members', function($q) use ($user) {
+        $q->where('user_id', $user->id);
+    })->get();
+}
         $posts = Post::with(['game', 'user', 'team'])
         ->where('visible', 1)
         ->when($request->filter_title, fn($q) =>
@@ -60,7 +66,7 @@ $pendingRequests = PostParticipant::with(['user', 'post'])
     ->get();
 
 
-     return view('home.index', compact('leaderTeams', 'games','teams' ,'posts','pendingRequests','upcomingEvents'));
+     return view('home.index', compact('leaderTeams', 'games','teams' ,'posts','pendingRequests','upcomingEvents','userTeams'));
      
     }
 

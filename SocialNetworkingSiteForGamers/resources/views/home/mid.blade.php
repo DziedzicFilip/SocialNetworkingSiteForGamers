@@ -86,41 +86,58 @@
       </div>
       <p class="mb-2">{{ $post->content }}</p>
 
-      @if($post->type === 'casual')
-        <div>
-          
-          <strong>Play date:</strong> {{ $post->expires_at ? \Carbon\Carbon::parse($post->expires_at)->format('Y-m-d H:i') : '-' }}
-        </div>
-        @if($post->max_players)
-    <div class="mb-2">
-        <strong>Players:</strong> {{ $post->current_players }}/{{ $post->max_players }}
+   @if($post->type === 'casual')
+    <div>
+        <strong>Play date:</strong> {{ $post->expires_at ? \Carbon\Carbon::parse($post->expires_at)->format('Y-m-d H:i') : '-' }}
     </div>
-@endif
-        @if($post->already_applied)
-    <div class="alert alert-info mt-2 mb-0 p-1">Already Sign up</div>
-@else
-    <form action="{{ route('posts.apply', $post->id) }}" method="POST" class="mt-2">
-        @csrf
-        <button type="submit" class="btn btn-outline-primary mb-2">Sign UP</button>
-    </form>
-@endif
-      @elseif($post->type === 'team')
-        <div>
-          <strong>Recruitment for team!</strong>
+    @if($post->max_players)
+        <div class="mb-2">
+            <strong>Players:</strong> {{ $post->current_players }}/{{ $post->max_players }}
         </div>
-        @if(Auth::user() && Auth::user()->teams->count() < 0)
-        @if($post->already_applied)
-    <div class="alert alert-info mt-2 mb-0 p-1">Already Sign up</div>
-@else
-    <form action="{{ route('posts.apply', $post->id) }}" method="POST" class="mt-2">
-        @csrf
-        <button type="submit" class="btn btn-outline-primary mb-2">Sign  up</button>
-    </form>
+    @endif
+    @if($post->already_applied)
+        <div class="alert alert-info mt-2 mb-0 p-1">Already Sign up</div>
+    @else
+        <form action="{{ route('posts.apply', $post->id) }}" method="POST" class="mt-2">
+            @csrf
+            <button type="submit" class="btn btn-outline-primary mb-2">Sign UP</button>
+        </form>
+    @endif
 @endif
-        @else
-          <div class="text-muted">You are already in a team.</div>
-        @endif
-      @endif
+
+@if($post->type === 'team')
+    @php
+        $user = Auth::user();
+        $alreadyInTeamForThisGame = false;
+        $isLeader = false;
+        if($user && isset($userTeams)) {
+            foreach($userTeams as $team) {
+                if($team->game_id == $post->game_id) {
+                    $alreadyInTeamForThisGame = true;
+                    if($team->leader_id == $user->id) {
+                        $isLeader = true;
+                    }
+                }
+            }
+        }
+    @endphp
+
+    @if(!$user)
+        <div class="text-muted">Zaloguj się, aby dołączyć do drużyny.</div>
+    @elseif($isLeader)
+        <div class="text-muted">Jesteś liderem drużyny w tej grze.</div>
+    @elseif($alreadyInTeamForThisGame)
+        <div class="text-muted">Należysz już do drużyny w tej grze.</div>
+    @elseif($post->already_applied)
+        <div class="alert alert-info mt-2 mb-0 p-1">Już zgłosiłeś się do tej drużyny!</div>
+    @else
+        <form action="{{ route('posts.apply', $post->id) }}" method="POST" class="mt-2">
+            @csrf
+            <button type="submit" class="btn btn-outline-primary mb-2">Dołącz do drużyny</button>
+        </form>
+    @endif
+@endif
+
 
       <button class="btn btn-link p-0 mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#commentsCollapse{{ $post->id }}" aria-expanded="false" aria-controls="commentsCollapse{{ $post->id }}">
         Show/Hide Comments

@@ -1,5 +1,10 @@
 
   
+    @if(session('status'))
+    <div class="alert alert-warning">
+        {{ session('status') }}
+    </div>
+@endif
     <div class="card p-3 mb-3 shadow-sm">
   <h5><i class="bi bi-calendar"></i> Upcoming Events</h5>
   <ul class="list-unstyled">
