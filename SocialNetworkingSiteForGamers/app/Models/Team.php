@@ -38,4 +38,13 @@ class Team extends Model
     {
         return $this->hasMany(GameMatch::class, 'winner_team_id');
     }
+   public function matches()
+{
+    return $this->belongsToMany(
+        GameMatch::class,      // model meczu
+        'match_participants',  // tabela pośrednia
+        'team_id',             // klucz obcy do teamu w match_participants
+        'match_id'             // klucz obcy do meczu w match_participants
+    );
+}
 }

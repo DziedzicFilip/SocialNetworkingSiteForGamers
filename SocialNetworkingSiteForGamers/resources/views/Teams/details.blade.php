@@ -44,96 +44,106 @@
 @endpush
 
 @section('content')
-
 <div class="container py-4">
-    <h2 class="mb-4 text-primary">Arcade Warriors <small class="text-muted">(League of Legends)</small></h2>
+    <h2 class="mb-4 text-primary">
+        {{ $team->name }}
+        <small class="text-muted">({{ $team->game->name ?? '-' }})</small>
+    </h2>
     <div class="row mb-4">
         <div class="col-md-4">
-            <img src="{{ asset('IMG/lol.jpg') }}" alt="League of Legends" class="img-fluid rounded shadow">
+            @if($team->game && $team->game->logo_url)
+                <img src="{{ asset($team->game->logo_url) }}" alt="{{ $team->game->name }}" class="img-fluid rounded shadow">
+            @endif
         </div>
         <div class="col-md-8">
             <h5>Description</h5>
-            <p>Competitive team focused on ranked tournaments.</p>
+            <p>{{ $team->description ?? 'No description.' }}</p>
             <h5>Statistics</h5>
             <ul>
-                <li>Matches played: <strong>24</strong></li>
-                <li>Wins: <strong>16</strong></li>
-                <li>Losses: <strong>8</strong></li>
-                <li>Win rate: <strong>66%</strong></li>
+                <li>Matches played: <strong>{{ $totalMatches }}</strong></li>
+                <li>Wins: <strong>{{ $wins }}</strong></li>
+                <li>Losses: <strong>{{ $losses }}</strong></li>
+                <li>Win rate: <strong>{{ $winRate }}%</strong></li>
             </ul>
             <h5>Recent Matches</h5>
             <ul>
-                <li>2025-06-10: <span class="text-success">Win</span> vs DragonSlayers (18:12)</li>
-                <li>2025-06-05: <span class="text-danger">Loss</span> vs Night Owls (14:16)</li>
-                <li>2025-05-30: <span class="text-success">Win</span> vs ProGamers (20:10)</li>
+               @foreach($recentMatches as $match)
+    @php
+        $participants = \App\Models\MatchParticipant::where('match_id', $match->id)->get();
+        $opponent = $participants->firstWhere('team_id', '!=', $team->id);
+        $opponentName = $opponent ? optional(\App\Models\Team::find($opponent->team_id))->name : 'Unknown';
+    @endphp
+    <li>
+        {{ \Carbon\Carbon::parse($match->match_date)->format('Y-m-d') }}:
+        @if($match->winner_team_id == $team->id)
+            <span class="text-success">Win</span>
+        @else
+            <span class="text-danger">Loss</span>
+        @endif
+        vs {{ $opponentName }}
+        ({{ $match->score ?? '-' }})
+    </li>
+@endforeach
             </ul>
-            <!-- Opcja opuszczenia drużyny -->
-            <form method="POST" action="#" class="mt-4 d-inline">
-                @csrf
-                <!-- W prawdziwej aplikacji podaj właściwy route do opuszczenia drużyny -->
-                <button type="submit" class="btn btn-danger"
-                    onclick="return confirm('Are you sure you want to leave this team?');">
-                    Leave Team
-                </button>
-            </form>
+            <div class="mt-3">
+                <strong>Next Match:</strong>
+                @if($nextMatch)
+                    <span class="badge bg-success">
+                        vs {{ $nextMatch->opponent_name ?? '-' }} - {{ \Carbon\Carbon::parse($nextMatch->match_date)->format('Y-m-d H:i') }}
+                    </span>
+                @else
+                    <span class="text-muted">No upcoming matches</span>
+                @endif
+            </div>
+            {{-- Opcja opuść/usuń drużynę --}}
+            @if($team->leader_id === Auth::id())
+                <form method="POST" action="{{ route('teams.delete', $team->id) }}" class="mt-4 d-inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger"
+                        onclick="return confirm('Are you sure you want to delete this team? All matches and members will be removed!');">
+                        Delete Team
+                    </button>
+                </form>
+            @else
+                <form method="POST" action="{{ route('teams.leave', $team->id) }}" class="mt-4 d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-danger"
+                        onclick="return confirm('Are you sure you want to leave this team?');">
+                        Leave Team
+                    </button>
+                </form>
+            @endif
         </div>
     </div>
 
     <h4 class="mb-3 mt-5 text-primary">Team Members</h4>
     <div class="row">
-        <!-- Example player cards -->
-        <div class="col-md-6">
-            <div class="player-card d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center">
-                    <img src="{{ asset('IMG/avatar1.jpg') }}" alt="PlayerOne" class="profile-avatar">
-                    <div>
-                        <div class="fw-bold">PlayerOne</div>
-                        <div class="text-muted small">Role: Leader</div>
+       @php
+    // Zbierz wszystkich członków (members + leader, bez duplikatów)
+    $allMembers = $team->members;
+    if (!$allMembers->contains('id', $team->leader_id)) {
+        $allMembers = $allMembers->push($team->leader);
+    }
+@endphp
+
+@foreach($allMembers as $member)
+    <div class="col-md-6">
+        <div class="player-card d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+                <img src="{{ asset($member->profile_image ?? 'IMG/default-avatar.jpg') }}" alt="{{ $member->username }}" class="profile-avatar">
+                <div>
+                    <div class="fw-bold">{{ $member->username }}</div>
+                    <div class="text-muted small">
+                        Role: {{ $team->leader_id == $member->id ? 'Leader' : 'Member' }}
                     </div>
                 </div>
-                <button class="btn btn-outline-primary profile-btn" data-bs-toggle="modal" data-bs-target="#profileModal1">View Profile</button>
             </div>
-        </div>
-        <div class="col-md-6">
-            <div class="player-card d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center">
-                    <img src="{{ asset('IMG/avatar2.jpg') }}" alt="GamerGirl" class="profile-avatar">
-                    <div>
-                        <div class="fw-bold">GamerGirl</div>
-                        <div class="text-muted small">Role: Member</div>
-                    </div>
-                </div>
-                <button class="btn btn-outline-primary profile-btn" data-bs-toggle="modal" data-bs-target="#profileModal2">View Profile</button>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="player-card d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center">
-                    <img src="{{ asset('IMG/avatar3.jpg') }}" alt="NoobMaster" class="profile-avatar">
-                    <div>
-                        <div class="fw-bold">NoobMaster</div>
-                        <div class="text-muted small">Role: Member</div>
-                    </div>
-                </div>
-                <button class="btn btn-outline-primary profile-btn" data-bs-toggle="modal" data-bs-target="#profileModal3">View Profile</button>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="player-card d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center">
-                    <img src="{{ asset('IMG/avatar4.jpg') }}" alt="ProKiller" class="profile-avatar">
-                    <div>
-                        <div class="fw-bold">ProKiller</div>
-                        <div class="text-muted small">Role: Member</div>
-                    </div>
-                </div>
-                <button class="btn btn-outline-primary profile-btn" data-bs-toggle="modal" data-bs-target="#profileModal4">View Profile</button>
-            </div>
+            <a href="{{ route('profile.show', $member->id) }}" class="btn btn-outline-primary profile-btn">View Profile</a>
         </div>
     </div>
-
-    <!-- Profile Modals (example for 4 users) -->
-    <!-- ... (modale bez zmian) ... -->
+@endforeach
+    </div>
 
     <a href="{{ route('teams.my') }}" class="btn btn-outline-secondary mt-4">Back to My Teams</a>
 </div>

@@ -2,7 +2,7 @@
 
   
     <div class="card text-center p-3 mb-3">
-  <img src="../IMG/logoArcadeUnionDefault.png" class="profile-img mx-auto" alt="team logo" />
+  <img src="{{ asset(Auth::user()->profile_image ?? 'IMG/LogoArcadeUnionDefault.png') }}" class="profile-img mx-auto" alt="team logo" /> 
  <h5 class="mt-3">{{ Auth::user()->username }}</h5>
   
 </div>

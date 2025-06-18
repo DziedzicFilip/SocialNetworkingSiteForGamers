@@ -5,6 +5,8 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\TeamController;
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -29,10 +31,6 @@ Route::get('/home', [HomeController::class, 'index'])
     ->name('home');
 
 
-Route::get('/teams/{id}/details', function ($id) {
-    
-    return view('Teams.details', ['id' => $id]);
-})->middleware(['auth'])->name('teams.details');
 
 Route::get('/profile/me', [ProfileController::class, 'myProfile'])
     ->middleware(['auth'])
@@ -49,4 +47,12 @@ Route::post('/requests/{id}/reject', [PostController::class, 'rejectRequest'])->
 Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
 Route::post('/posts/{id}/apply', [PostController::class, 'apply'])->name('posts.apply');
 Route::get('/profile/{id}', [ProfileController::class, 'show'])->name('profile.show');
+
+Route::get('/teams/my', [TeamController::class, 'index'])->middleware(['auth'])->name('teams.my');
+Route::post('/teams/{id}/leave', [TeamController::class, 'leave'])->name('teams.leave');
+Route::get('/teams/{id}', [TeamController::class, 'details'])->name('teams.details');
+
+Route::get('/teams/{id}/details', [TeamController::class, 'details'])->middleware(['auth'])->name('teams.details');
+Route::post('/teams/{id}/leave', [TeamController::class, 'leave'])->middleware(['auth'])->name('teams.leave');
+Route::delete('/teams/{id}/delete', [TeamController::class, 'delete'])->middleware(['auth'])->name('teams.delete');
 require __DIR__.'/auth.php';
