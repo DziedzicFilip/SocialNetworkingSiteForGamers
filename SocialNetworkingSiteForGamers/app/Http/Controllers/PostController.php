@@ -42,6 +42,24 @@ class PostController extends Controller
    public function apply($id)
 {
     $user = Auth::user();
+    $post = Post::findOrFail($id);
+
+    // Sprawdź, czy user już jest w teamie tej gry
+    $userTeams = Team::whereHas('members', function($q) use ($user) {
+        $q->where('user_id', $user->id);
+    })->where('game_id', $post->game_id)->count();
+
+    // Sprawdź, czy user jest liderem teamu tej gry
+    $isLeader = Team::where('game_id', $post->game_id)
+        ->where('leader_id', $user->id)
+        ->exists();
+
+    if ($isLeader) {
+        return back()->with('status', 'Nie możesz dołączyć do innej drużyny w tej grze, bo jesteś liderem własnej!');
+    }
+    if ($userTeams > 0) {
+        return back()->with('status', 'Należysz już do drużyny w tej grze!');
+    }
 
     $exists = PostParticipant::where('post_id', $id)
         ->where('user_id', $user->id)
@@ -75,6 +93,13 @@ public function acceptRequest($id)
         // Odrzuć akceptację, bo user już jest w teamie tej gry
         return back()->with('status', 'Too late – user already joined another team in this game.');
     }
+    $isLeader = Team::where('game_id', $post->game_id)
+    ->where('leader_id', $userId)
+    ->exists();
+
+if ($isLeader) {
+    return back()->with('status', 'Nie możesz dołączyć do innej drużyny w tej grze, bo jesteś liderem własnej!');
+}
 
     // Akceptuj zgłoszenie
     $request->status = 'accepted';

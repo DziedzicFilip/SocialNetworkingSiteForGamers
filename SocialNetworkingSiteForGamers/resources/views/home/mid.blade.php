@@ -107,35 +107,35 @@
 
 @if($post->type === 'team')
     @php
-        $user = Auth::user();
-        $alreadyInTeamForThisGame = false;
-        $isLeader = false;
-        if($user && isset($userTeams)) {
-            foreach($userTeams as $team) {
-                if($team->game_id == $post->game_id) {
-                    $alreadyInTeamForThisGame = true;
-                    if($team->leader_id == $user->id) {
-                        $isLeader = true;
-                    }
+    $user = Auth::user();
+    $alreadyInTeamForThisGame = false;
+    $isLeader = false;
+    if($user && isset($userTeams)) {
+        foreach($userTeams as $team) {
+            if($team->game_id == $post->game_id) {
+                if($team->leader_id == $user->id) {
+                    $isLeader = true;
                 }
+                $alreadyInTeamForThisGame = true;
             }
         }
-    @endphp
+    }
+@endphp
 
-    @if(!$user)
-        <div class="text-muted">Zaloguj się, aby dołączyć do drużyny.</div>
-    @elseif($isLeader)
-        <div class="text-muted">Jesteś liderem drużyny w tej grze.</div>
-    @elseif($alreadyInTeamForThisGame)
-        <div class="text-muted">Należysz już do drużyny w tej grze.</div>
-    @elseif($post->already_applied)
-        <div class="alert alert-info mt-2 mb-0 p-1">Już zgłosiłeś się do tej drużyny!</div>
-    @else
-        <form action="{{ route('posts.apply', $post->id) }}" method="POST" class="mt-2">
-            @csrf
-            <button type="submit" class="btn btn-outline-primary mb-2">Dołącz do drużyny</button>
-        </form>
-    @endif
+@if(!$user)
+    <div class="text-muted">Zaloguj się, aby dołączyć do drużyny.</div>
+@elseif($isLeader)
+    <div class="text-muted">Jesteś liderem drużyny w tej grze.</div>
+@elseif($alreadyInTeamForThisGame)
+    <div class="text-muted">Należysz już do drużyny w tej grze.</div>
+@elseif($post->already_applied)
+    <div class="alert alert-info mt-2 mb-0 p-1">Już zgłosiłeś się do tej drużyny!</div>
+@else
+    <form action="{{ route('posts.apply', $post->id) }}" method="POST" class="mt-2">
+        @csrf
+        <button type="submit" class="btn btn-outline-primary mb-2">Dołącz do drużyny</button>
+    </form>
+@endif
 @endif
 
 
