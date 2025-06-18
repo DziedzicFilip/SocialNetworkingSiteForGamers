@@ -11,10 +11,9 @@ class MatchParticipant extends Model
     public $incrementing = false;
     protected $primaryKey = null;
 
-    protected $fillable = [
-        'match_id', 'user_id', 'team_id'
-    ];
-
+  protected $fillable = [
+    'match_id', 'user_id', 'team_id', 'is_winner'
+];
     public function match()
     {
         return $this->belongsTo(GameMatch::class, 'match_id');

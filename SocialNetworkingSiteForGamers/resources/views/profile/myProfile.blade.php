@@ -89,24 +89,31 @@
         </div>
     </div>
 
-    <div class="profile-stats-card mt-4">
-        <h5>Recent Matches</h5>
-        <ul class="mb-0">
-            @foreach($recentMatches as $match)
-                <li>
-                    {{ $match->match_date }}:
-                    @php
-                        $isWin = in_array($match->id, $matchesWinIds ?? []);
-                    @endphp
+   <div class="profile-stats-card mt-4">
+    <h5>Recent Matches</h5>
+    <ul class="mb-0">
+        @foreach($recentMatches as $match)
+            @php
+                // Pobierz uczestnika tego meczu dla użytkownika
+                $participant = \App\Models\MatchParticipant::where('match_id', $match->id)
+                    ->where('user_id', $user->id)
+                    ->first();
+                $isWin = $participant && $participant->is_winner;
+            @endphp
+            <li>
+                {{ $match->match_date }}:
+                @if($match->status === 'played')
                     @if($isWin)
                         <span class="text-success">Win</span>
                     @else
                         <span class="text-danger">Loss</span>
                     @endif
-                    (Game: {{ $match->game->name ?? 'Unknown' }})
-                </li>
-            @endforeach
-        </ul>
-    </div>
+                @else
+                    <span class="text-warning">Not played</span>
+                @endif
+                (Game: {{ $match->game->name ?? 'Unknown' }})
+            </li>
+        @endforeach
+    </ul>
 </div>
 @endsection

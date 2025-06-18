@@ -10,7 +10,11 @@ class GameMatch extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'game_id', 'match_date', 'winner_team_id', 'winner_user_id'
+        'game_id', 'match_date', 'winner_team_id', 'status', 'is_played'
+    ];
+
+    protected $casts = [
+        'match_date' => 'datetime', // Tutaj dodana linia
     ];
 
     public function game()
@@ -27,4 +31,13 @@ class GameMatch extends Model
     {
         return $this->belongsTo(User::class, 'winner_user_id');
     }
+
+    public function participants()
+    {
+        return $this->belongsToMany(User::class, 'match_participants', 'match_id', 'user_id');
+    }
+    public function matchParticipants()
+{
+    return $this->hasMany(MatchParticipant::class, 'match_id');
+}
 }

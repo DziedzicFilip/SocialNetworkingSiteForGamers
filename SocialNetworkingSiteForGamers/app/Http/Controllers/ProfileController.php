@@ -105,29 +105,22 @@ public function myProfile()
 {
     $user = Auth::user();
 
-    // Pobierz wszystkie mecze, w których użytkownik brał udział
-    $matchIds = MatchParticipant::where('user_id', $user->id)->pluck('match_id');
-    $matches = GameMatch::whereIn('id', $matchIds)->with('game')->get();
+// Pobierz rozegrane mecze użytkownika
+$matchIds = MatchParticipant::where('user_id', $user->id)->pluck('match_id');
+$matches = GameMatch::whereIn('id', $matchIds)
+    ->where('status', 'played')
+    ->with('game')
+    ->get();
 
-    // ID drużyn użytkownika
-    $userTeamIds = $user->teams->pluck('teams.id')->toArray();
+// Wygrane mecze (gdzie user jest zwycięzcą w match_participants)
+$wins = MatchParticipant::where('user_id', $user->id)
+    ->whereIn('match_id', $matches->pluck('id'))
+    ->where('is_winner', 1)
+    ->count();
 
-    // Wygrane mecze solo (gdzie user wygrał indywidualnie)
-    $soloWins = GameMatch::whereIn('id', $matchIds)
-        ->where('winner_user_id', $user->id)
-        ->count();
-
-    // Wygrane mecze drużynowe (gdzie wygrała drużyna użytkownika)
-    $teamWins = GameMatch::whereIn('id', $matchIds)
-        ->whereIn('winner_team_id', $userTeamIds)
-        ->count();
-
-    $wins = $soloWins + $teamWins;
-
-    // Ogólna statystyka
-    $totalMatches = $matches->count();
-    $losses = $totalMatches - $wins;
-    $winRate = $totalMatches > 0 ? round(($wins / $totalMatches) * 100) : 0;
+$totalMatches = $matches->count();
+$losses = $totalMatches - $wins;
+$winRate = $totalMatches > 0 ? round(($wins / $totalMatches) * 100) : 0;
 
     // Gry, w których użytkownik brał udział
     $gamesPlayed = $matches->groupBy('game_id')->map->count();
@@ -148,20 +141,21 @@ public function show($id)
     $user = User::findOrFail($id);
 
     // Pobierz wszystkie mecze, w których użytkownik brał udział
-    $matchIds = MatchParticipant::where('user_id', $user->id)->pluck('match_id');
-    $matches = GameMatch::whereIn('id', $matchIds)->get();
+  // Pobierz rozegrane mecze użytkownika
+$matchIds = MatchParticipant::where('user_id', $user->id)->pluck('match_id');
+$matches = GameMatch::whereIn('id', $matchIds)
+    ->where('status', 'played')
+    ->with('game')
+    ->get();
 
-    // Wygrane mecze (gdzie użytkownik jest w zwycięskiej drużynie lub jako zwycięzca)
-    $userTeamIds = $user->teams()->pluck('teams.id')->toArray();
-    $wins = GameMatch::whereIn('id', $matchIds)
-        ->where(function($q) use ($user, $userTeamIds) {
-            $q->whereIn('winner_team_id', $userTeamIds)
-              ->orWhere('winner_user_id', $user->id);
-        })->count();
+$wins = MatchParticipant::where('user_id', $user->id)
+    ->whereIn('match_id', $matches->pluck('id'))
+    ->where('is_winner', 1)
+    ->count();
 
-    $totalMatches = $matches->count();
-    $losses = $totalMatches - $wins;
-    $winRate = $totalMatches > 0 ? round(($wins / $totalMatches) * 100) : 0;
+$totalMatches = $matches->count();
+$losses = $totalMatches - $wins;
+$winRate = $totalMatches > 0 ? round(($wins / $totalMatches) * 100) : 0;
 
     // Liczba drużyn użytkownika
     $teamsCount = $user->teams()->count();

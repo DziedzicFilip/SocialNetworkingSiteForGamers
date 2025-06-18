@@ -65,26 +65,33 @@
                 <li>Losses: <strong>{{ $losses }}</strong></li>
                 <li>Win rate: <strong>{{ $winRate }}%</strong></li>
             </ul>
-            <h5>Recent Matches</h5>
-            <ul>
-               @foreach($recentMatches as $match)
+           <h5>Recent Matches</h5>
+<ul>
+@foreach($recentMatches as $match)
     @php
         $participants = \App\Models\MatchParticipant::where('match_id', $match->id)->get();
         $opponent = $participants->firstWhere('team_id', '!=', $team->id);
         $opponentName = $opponent ? optional(\App\Models\Team::find($opponent->team_id))->name : 'Unknown';
+        // Czy nasz team wygrał?
+        $ourParticipant = $participants->firstWhere('team_id', $team->id);
+        $isWin = $ourParticipant && $ourParticipant->is_winner;
     @endphp
     <li>
         {{ \Carbon\Carbon::parse($match->match_date)->format('Y-m-d') }}:
-        @if($match->winner_team_id == $team->id)
-            <span class="text-success">Win</span>
+        @if($match->status === 'played')
+            @if($isWin)
+                <span class="text-success">Win</span>
+            @else
+                <span class="text-danger">Loss</span>
+            @endif
         @else
-            <span class="text-danger">Loss</span>
+            <span class="text-warning">Not played</span>
         @endif
         vs {{ $opponentName }}
         ({{ $match->score ?? '-' }})
     </li>
 @endforeach
-            </ul>
+</ul>
             <div class="mt-3">
                 <strong>Next Match:</strong>
                 @if($nextMatch)

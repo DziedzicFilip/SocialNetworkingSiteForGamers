@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\MatchesController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -37,9 +38,9 @@ Route::get('/profile/me', [ProfileController::class, 'myProfile'])
     ->name('profile.me');
 
 
-Route::get('/matches', function () {
-    return view('Matches.index');
-})->middleware(['auth'])->name('matches.index');
+Route::get('/matches', [MatchesController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('matches.index');
 Route::post('/posts/{id}/apply', [PostController::class, 'apply'])->name('posts.apply');
 Route::post('/requests/{id}/accept', [PostController::class, 'acceptRequest'])->name('posts.acceptRequest');
 Route::post('/requests/{id}/reject', [PostController::class, 'rejectRequest'])->name('posts.rejectRequest');
@@ -55,4 +56,15 @@ Route::get('/teams/{id}', [TeamController::class, 'details'])->name('teams.detai
 Route::get('/teams/{id}/details', [TeamController::class, 'details'])->middleware(['auth'])->name('teams.details');
 Route::post('/teams/{id}/leave', [TeamController::class, 'leave'])->middleware(['auth'])->name('teams.leave');
 Route::delete('/teams/{id}/delete', [TeamController::class, 'delete'])->middleware(['auth'])->name('teams.delete');
-require __DIR__.'/auth.php';
+Route::post('/posts/{id}/rejectRequest', [PostController::class, 'rejectRequest'])->name('posts.rejectRequest');
+
+Route::get('/matches/{id}', [MatchesController::class, 'show'])
+    ->name('matches.details');
+    Route::post('/matches/{id}/cancel', [MatchesController::class, 'cancel'])
+    ->name('matches.cancel');
+    Route::get('/matches/{id}', [MatchesController::class, 'show'])->name('matches.show');
+Route::get('/matches/{id}', [MatchesController::class, 'show'])->name('matches.show');
+Route::put('/matches/{id}', [MatchesController::class, 'update'])->name('matches.update');
+
+
+    require __DIR__.'/auth.php';
