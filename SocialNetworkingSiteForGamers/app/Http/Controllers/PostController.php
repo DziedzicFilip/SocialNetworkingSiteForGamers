@@ -15,7 +15,12 @@ class PostController extends Controller
 {
     public function store(Request $request)
 {
-    
+    if ($request->type === 'team') {
+    $userTeam = \App\Models\Team::where('leader_id', Auth::id())->first();
+    if (!$userTeam) {
+        return back()->withErrors(['type' => 'Nie możesz dodać posta rekrutacyjnego, jeśli nie jesteś liderem żadnej drużyny.'])->withInput();
+    }
+}
     $validated = $request->validate([
         'title' => 'required|string|max:255',
         'content' => 'required|string|max:500',

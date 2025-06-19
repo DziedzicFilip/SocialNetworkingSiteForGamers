@@ -161,7 +161,17 @@
                     </div>
                 </div>
             </div>
-            <a href="{{ route('profile.show', $member->id) }}" class="btn btn-outline-primary profile-btn">View Profile</a>
+            <div>
+                <a href="{{ route('profile.show', $member->id) }}" class="btn btn-outline-primary profile-btn">View Profile</a>
+                @if($team->leader_id === Auth::id() && $member->id !== $team->leader_id)
+                    <form method="POST" action="{{ route('teams.removeMember', [$team->id, $member->id]) }}" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-danger ms-2" onclick="return confirm('Na pewno usunąć tego członka z drużyny?')">
+                            Usuń
+                        </button>
+                    </form>
+                @endif
+            </div>
         </div>
     </div>
 @endforeach

@@ -84,4 +84,6 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::post('/admin/games/delete', [AdminController::class, 'deleteGame'])->name('admin.games.delete');
-    require __DIR__.'/auth.php';
+
+Route::post('/teams/{team}/remove-member/{user}', [TeamController::class, 'removeMember'])->name('teams.removeMember');   
+require __DIR__.'/auth.php';

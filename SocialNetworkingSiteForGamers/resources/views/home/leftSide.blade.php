@@ -17,13 +17,16 @@
         <option value="team">Team recruitment</option>
     </select>
     <!-- Wybór gry -->
-   <label for="game_id" class="form-label">Game:</label>
-<select name="game_id" id="game_id" class="form-select mb-2" >
-    <option value="">Select game...</option>
-    @foreach($games as $game)
-        <option value="{{ $game->id }}">{{ $game->name }}</option>
-    @endforeach
-</select>
+  
+<div id="gameField">
+    <label for="game_id" class="form-label">Game:</label>
+    <select name="game_id" id="game_id" class="form-select mb-2">
+        <option value="">Select game...</option>
+        @foreach($games as $game)
+            <option value="{{ $game->id }}">{{ $game->name }}</option>
+        @endforeach
+    </select>
+</div>
     <label for="title" class="form-label">Title:</label>
 <input type="text" name="title" id="title" class="form-control mb-2" maxlength="255" required>
     <!-- Opis -->
@@ -37,7 +40,7 @@
 
     <!-- Wybór drużyny (jeśli jesteś liderem) -->
     @if($leaderTeams->count() > 0)
-    <label for="team_id" class="form-label">Your team (if you are a leader):</label>
+    <label for="team_id" class="form-label">Your team :</label>
     <select name="team_id" id="team_id" class="form-select mb-2">
         <option value="">None</option>
         @foreach($leaderTeams as $team)
@@ -47,13 +50,14 @@
 @endif
 
     <!-- Liczba szukanych graczy -->
-    <div id="playersField">
-       <label for="play_time" class="form-label">Date of playing:</label>
-<input type="datetime-local" name="play_time" id="play_time" class="form-control mb-2">
-
-        <label for="max_players" class="form-label">Number of players wanted:</label>
-        <input type="number" name="max_players" id="max_players" class="form-control mb-2" min="1">
+   <div id="playersField">
+    <div id="playTimeField">
+        <label for="play_time" class="form-label">Date of playing:</label>
+        <input type="datetime-local" name="play_time" id="play_time" class="form-control mb-2">
     </div>
+    <label for="max_players" class="form-label">Number of players wanted:</label>
+    <input type="number" name="max_players" id="max_players" class="form-control mb-2" min="1">
+</div>
     <button type="submit" class="btn btn-primary w-100 mt-2">Add Announcement</button>
     @if ($errors->any())
     <div class="alert alert-danger">
@@ -69,13 +73,22 @@
 function togglePlayersField() {
     const type = document.getElementById('type').value;
     const playersField = document.getElementById('playersField');
+    const gameField = document.getElementById('gameField');
+    const playTimeField = document.getElementById('playTimeField');
+
     if(type === 'discussion') {
         playersField.style.display = 'none';
+        gameField.style.display = 'block';
+    } else if(type === 'team') {
+        playersField.style.display = 'block';
+        gameField.style.display = 'none';
+        playTimeField.style.display = 'none';
     } else {
         playersField.style.display = 'block';
+        gameField.style.display = 'block';
+        playTimeField.style.display = 'block';
     }
 }
-// Wywołaj na starcie, jeśli edytujesz formularz lub masz domyślną wartość
 document.addEventListener('DOMContentLoaded', togglePlayersField);
 </script>
 </div>

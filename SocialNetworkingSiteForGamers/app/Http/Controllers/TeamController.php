@@ -274,4 +274,32 @@ public function addMatch(Request $request, $teamId)
 
     return back()->with('success', 'Mecz został dodany i przypisany wszystkim członkom drużyny!');
 }
+
+
+
+public function removeMember(Request $request, $teamId, $userId)
+{
+    $team = Team::findOrFail($teamId);
+
+    // Tylko lider może usuwać członków
+    if ($team->leader_id !== Auth::id()) {
+        return back()->with('error', 'Tylko lider może usuwać członków!');
+    }
+
+    // Nie pozwól usunąć siebie (lidera)
+    if ($userId == $team->leader_id) {
+        return back()->with('error', 'Nie możesz usunąć siebie jako lidera!');
+    }
+
+    // Usuń powiązania z match_participants gdzie is_winner jest NULL
+    MatchParticipant::where('user_id', $userId)
+        ->where('team_id', $teamId)
+        ->whereNull('is_winner')
+        ->delete();
+
+    // Usuń członka z drużyny
+    $team->members()->detach($userId);
+
+    return back()->with('success', 'Członek został usunięty z drużyny i z powiązanych meczów.');
+}
 }
