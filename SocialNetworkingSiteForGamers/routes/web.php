@@ -7,6 +7,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\MatchesController;
+use App\Http\Controllers\AdminController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -35,6 +36,7 @@ Route::get('/home', [HomeController::class, 'index'])
     ->name('home');
 
 
+Route::get('/matches/{id}/cancel', [MatchesController::class, 'cancel'])->name('matches.cancel');
 
 Route::get('/profile/me', [ProfileController::class, 'myProfile'])
     ->middleware(['auth'])
@@ -69,6 +71,17 @@ Route::get('/matches/{id}', [MatchesController::class, 'show'])
 Route::get('/matches/{id}', [MatchesController::class, 'show'])->name('matches.show');
 Route::put('/matches/{id}', [MatchesController::class, 'update'])->name('matches.update');
 
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::post('/admin/games/store', [AdminController::class, 'storeGame'])->name('admin.games.store');
+    Route::post('/admin/games/update', [AdminController::class, 'updateGame'])->name('admin.games.update');
+    Route::post('/admin/users/store', [AdminController::class, 'storeUser'])->name('admin.users.store');
+});
+Route::middleware(['auth'])->group(function () {
+    Route::get('/posts/my', [PostController::class, 'myPosts'])->name('posts.my');
+    Route::get('/posts/{id}/edit', [PostController::class, 'edit'])->name('posts.edit');
+    Route::post('/posts/{id}/update', [PostController::class, 'update'])->name('posts.update');
+});
 
-
+Route::post('/admin/games/delete', [AdminController::class, 'deleteGame'])->name('admin.games.delete');
     require __DIR__.'/auth.php';

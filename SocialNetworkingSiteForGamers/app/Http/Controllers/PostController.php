@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Post;
@@ -9,17 +9,20 @@ use App\Models\PostParticipant;
 use App\Models\TeamMember;
 use App\Models\Team;
 use App\Models\GameMatch;
+use App\Models\Game;
 class PostController extends Controller
+
 {
     public function store(Request $request)
 {
+    
     $validated = $request->validate([
         'title' => 'required|string|max:255',
-        'content' => 'required|string',
+        'content' => 'required|string|max:500',
         'game_id' => 'nullable|exists:games,id',
         'type' => 'required|in:discussion,casual,team',
         'max_players' => 'nullable|integer|min:1',
-        'play_time' => 'nullable|date',
+        'play_time' => 'nullable|date|after:now',
         'team_id' => 'nullable|exists:teams,id',
     ]);
 
@@ -38,15 +41,17 @@ class PostController extends Controller
     $post->save();
 
     // Dodaj mecz jeśli to ogłoszenie o grę
-    if (in_array($post->type, ['casual', 'team']) && $post->game_id && $post->play_time) {
-   GameMatch::create([
-    'game_id' => $post->game_id,
-    'match_date' => $post->play_time,
-    'winner_team_id' => null,
-    // 'winner_user_id'=> null, // USUŃ TO
-    'status' => 'scheduled',
-]);
-    }
+   if (in_array($post->type, ['casual', 'team']) && $post->game_id && $post->play_time) {
+    GameMatch::create([
+        'game_id' => $post->game_id,
+        'match_date' => $post->play_time,
+        'winner_team_id' => null,
+        'status' => 'scheduled',
+        'title' => $post->title,
+        'description' => $post->content,
+        'creator_id' => $post->user_id,
+    ]);
+}
 
     return redirect()->back()->with('status', 'Post added!');
 }
@@ -176,5 +181,74 @@ public function rejectRequest($id)
     return back()->with('status', 'Request rejected!');
 }
 
+public function myPosts(Request $request)
+{
+    $user = Auth::user();
 
+    $query = Post::where('user_id', $user->id);
+
+    // Filtry
+    if ($request->filled('search')) {
+        $query->where('title', 'like', '%' . $request->search . '%');
+    }
+    if ($request->filled('type')) {
+        $query->where('type', $request->type);
+    }
+    if ($request->filled('game_id')) {
+        $query->where('game_id', $request->game_id);
+    }
+ if ($request->filled('visible')) {
+    $query->where('visible', $request->visible);
+}
+
+    $posts = $query->orderByDesc('created_at')->paginate(10);
+    $games = \App\Models\Game::all();
+
+    return view('Posts.index', compact('posts', 'games'));
+}
+
+public function edit($id)
+{
+    $post = Post::findOrFail($id);
+    if (Auth::id() !== $post->user_id) {
+    abort(403, 'Brak dostępu');
+}
+    // lub sprawdź Auth::id() === $post->user_id
+    $games = \App\Models\Game::all();
+    $teams = \App\Models\Team::where('game_id', $post->game_id)->get();
+    return view('Posts.edit', compact('post', 'games', 'teams'));
+}
+
+public function update(Request $request, $id)
+{
+    $post = Post::findOrFail($id);
+    if (Auth::id() !== $post->user_id) {
+        abort(403, 'Brak dostępu');
+    }
+
+    $validated = $request->validate([
+        'title' => 'required|string|max:255',
+       'content' => 'required|string|max:500',
+        'game_id' => 'nullable|exists:games,id',
+        'type' => 'required|in:discussion,casual,team',
+        'max_players' => 'nullable|integer|min:1',
+        'play_time' => 'nullable|date|after:now',
+        'team_id' => 'nullable|exists:teams,id',
+        'visible' => 'required|in:0,1',
+    ]);
+
+    unset($validated['type']);
+
+    if ($post->type !== 'discussion') {
+        $validated['visible'] = 0;
+        $validated['max_players'] = $validated['max_players'] ?? null;
+        $validated['play_time'] = $validated['play_time'] ?? null;
+        $validated['team_id'] = $validated['team_id'] ?? null;
+    }
+
+    $post->fill($validated);
+    $post->save();
+
+    return redirect()->route('posts.my')->with('status', 'Post zaktualizowany!');
+}
 }

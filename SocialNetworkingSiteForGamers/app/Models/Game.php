@@ -10,7 +10,7 @@ class Game extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'name'
+        'name','image'
     ];
 
     public function teams()

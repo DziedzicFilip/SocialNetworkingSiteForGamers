@@ -31,6 +31,10 @@
         </select>
     </div>
     <div class="mb-3">
+    <label for="filter_user" class="form-label">User nickname</label>
+    <input type="text" id="filter_user" name="filter_user" value="{{ request('filter_user') }}" class="form-control form-control-sm" placeholder="Enter nickname...">
+</div>
+    <div class="mb-3">
         <label for="filter_type" class="form-label">Post type</label>
         <select id="filter_type" name="filter_type" class="form-select form-select-sm">
             <option value="">All types</option>
@@ -64,12 +68,19 @@
   @foreach($posts as $post)
     <div class="card p-3 mb-3">
       <div class="d-flex align-items-center mb-3">
-        @if($post->game && $post->game->logo_url)
-          <img src="{{ asset($post->game->logo_url) }}" alt="Game Logo" class="me-2" style="width: 40px; height: 40px;">
-        @endif
+        @if($post->game && $post->game->image)
+         <img src="{{ asset($post->game->image) }}" alt="{{ $team->game->name }}" alt="Game Logo" class="me-2" style="width: 150px; height: 150px;">
+       
+          @endif
         <div>
           <h5 class="mb-1">{{ $post->title }}</h5>
-          <small class="text-muted">{{ $post->created_at }}</small>
+      <small class="text-muted">
+    @if($post->play_time)
+        {{ \Carbon\Carbon::parse($post->play_time)->format('Y-m-d H:i') }}
+    @else
+        {{ $post->created_at }}
+    @endif
+</small>
           <div class="mt-1">
             <span class="fw-bold">{{ $post->user->username }}</span>
             @if($post->team)
@@ -88,8 +99,7 @@
 
    @if($post->type === 'casual')
     <div>
-        <strong>Play date:</strong> {{ $post->expires_at ? \Carbon\Carbon::parse($post->expires_at)->format('Y-m-d H:i') : '-' }}
-    </div>
+  <strong>Play date:</strong> {{ $post->play_time ? \Carbon\Carbon::parse($post->play_time)->format('Y-m-d H:i') : '-' }}</div>
     @if($post->max_players)
         <div class="mb-2">
             <strong>Players:</strong> {{ $post->current_players }}/{{ $post->max_players }}
@@ -138,7 +148,7 @@
 @endif
 @endif
 
-
+<!-- 
       <button class="btn btn-link p-0 mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#commentsCollapse{{ $post->id }}" aria-expanded="false" aria-controls="commentsCollapse{{ $post->id }}">
         Show/Hide Comments
       </button>
@@ -157,6 +167,9 @@
           </form>
         </div>
       </div>
+       -->
     </div>
+    
   @endforeach
+ 
 </div>

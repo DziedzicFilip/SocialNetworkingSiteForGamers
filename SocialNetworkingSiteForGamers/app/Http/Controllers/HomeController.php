@@ -18,7 +18,7 @@ class HomeController extends Controller
         if ($user) {
             $leaderTeams = Team::where('leader_id', $user->id)->get();
         }
-         $games = Game::all();
+         $games = Game::where('visible', 1)->get();
         $userTeams = collect();
 if ($user) {
     $userTeams = Team::with('game')
@@ -26,20 +26,25 @@ if ($user) {
         $q->where('user_id', $user->id);
     })->get();
 }
-        $posts = Post::with(['game', 'user', 'team'])
-        ->where('visible', 1)
-        ->when($request->filter_title, fn($q) =>
-            $q->where('title', 'like', '%' . $request->filter_title . '%'))
-        ->when($request->filter_game, fn($q) =>
-            $q->where('game_id', $request->filter_game))
-        ->when($request->filter_team, fn($q) =>
-            $q->where('team_id', $request->filter_team))
-        ->when($request->filter_type, fn($q) =>
-            $q->where('type', $request->filter_type))
-        ->when($request->filter_date, fn($q) =>
-            $q->whereDate('created_at', $request->filter_date))
-        ->orderBy('created_at', $request->filter_sort === 'asc' ? 'asc' : 'desc')
-        ->get();
+       $posts = Post::with(['game', 'user', 'team'])
+    ->where('visible', 1)
+    ->when($request->filter_title, fn($q) =>
+        $q->where('title', 'like', '%' . $request->filter_title . '%'))
+    ->when($request->filter_game, fn($q) =>
+        $q->where('game_id', $request->filter_game))
+    ->when($request->filter_team, fn($q) =>
+        $q->where('team_id', $request->filter_team))
+    ->when($request->filter_type, fn($q) =>
+        $q->where('type', $request->filter_type))
+    ->when($request->filter_date, fn($q) =>
+        $q->whereDate('created_at', $request->filter_date))
+    ->when($request->filter_user, function($q) use ($request) {
+        $q->whereHas('user', function($q2) use ($request) {
+            $q2->where('username', 'like', '%' . $request->filter_user . '%');
+        });
+    })
+    ->orderBy('created_at', $request->filter_sort === 'asc' ? 'asc' : 'desc')
+    ->get();
         $userId = Auth::id();
 foreach ($posts as $post) {
     $post->already_applied = PostParticipant::where('post_id', $post->id)

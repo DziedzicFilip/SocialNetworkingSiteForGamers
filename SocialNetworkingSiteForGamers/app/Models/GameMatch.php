@@ -10,9 +10,14 @@ class GameMatch extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'game_id', 'match_date', 'winner_team_id', 'status', 'is_played'
-    ];
+    'game_id', 'match_date', 'winner_team_id', 'status', 'is_played',
+    'title', 'description', 'creator_id',
+];
 
+public function creator()
+{
+    return $this->belongsTo(User::class, 'creator_id');
+}
     protected $casts = [
         'match_date' => 'datetime', // Tutaj dodana linia
     ];

@@ -9,6 +9,7 @@ use App\Models\Game;
 use App\Models\GameMatch;
 use App\Models\MatchParticipant;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
 
 class TeamController extends Controller
 {
@@ -64,7 +65,8 @@ public function index(Request $request)
 }
 
     // Szczegóły drużyny
-   public function details($id)
+  
+public function details($id, Request $request)
 {
     $team = Team::with([
         'game',
@@ -86,10 +88,8 @@ public function index(Request $request)
 
     $totalMatches = $matches->count();
 
-    // Wygrane mecze: jeśli wszyscy uczestnicy z tego teamu mają is_winner = 1
     $wins = 0;
     $losses = 0;
-
     foreach ($matches as $match) {
         $teamParticipants = MatchParticipant::where('match_id', $match->id)
             ->where('team_id', $team->id)
@@ -100,6 +100,20 @@ public function index(Request $request)
         } else {
             $losses++;
         }
+    }
+
+    // Zbierz wszystkich członków (members + leader, bez duplikatów)
+    $allMembers = $team->members;
+    if (!$allMembers->contains('id', $team->leader_id)) {
+        $allMembers = $allMembers->push($team->leader);
+    }
+
+    // FILTR: wyszukiwanie gracza po nicku
+    if ($request->filled('member_search')) {
+        $search = mb_strtolower($request->member_search);
+        $allMembers = $allMembers->filter(function($member) use ($search) {
+            return mb_strpos(mb_strtolower($member->username), $search) !== false;
+        });
     }
 
     $winRate = $totalMatches > 0 ? round(($wins / $totalMatches) * 100) : 0;
@@ -117,7 +131,7 @@ public function index(Request $request)
         ->first();
 
     return view('Teams.details', compact(
-        'team', 'totalMatches', 'wins', 'losses', 'winRate', 'recentMatches', 'nextMatch'
+        'team', 'totalMatches', 'wins', 'losses', 'winRate', 'recentMatches', 'nextMatch', 'allMembers'
     ));
 }
 
@@ -222,16 +236,21 @@ public function addMatch(Request $request, $teamId)
 
     $request->validate([
         'match_date' => 'required|date',
+        'title' => 'required|string|max:255',
+        'description' => 'nullable|string|max:2000',
         'opponent_name' => 'nullable|string|max:255',
     ]);
 
-    DB::transaction(function () use ($request, $team) {
+    DB::transaction(function () use ($request, $team,$user) {
         // Utwórz mecz
-        $match = GameMatch::create([
-            'game_id' => $team->game_id,
-            'match_date' => $request->match_date,
-            'status' => 'scheduled',
-        ]);
+      $match = GameMatch::create([
+    'game_id' => $team->game_id,
+    'match_date' => $request->match_date,
+    'status' => 'scheduled',
+    'title' => $request->title,
+    'description' => $request->description,
+    'creator_id' => $user->id,
+]);
 
         // Dodaj wszystkich członków drużyny jako uczestników meczu
         foreach ($team->members as $member) {
@@ -248,11 +267,10 @@ public function addMatch(Request $request, $teamId)
                 'match_id' => $match->id,
                 'user_id' => $team->leader_id,
                 'team_id' => $team->id,
-                   'is_winner' => null,
+                'is_winner' => null,
             ]);
         }
     });
-    
 
     return back()->with('success', 'Mecz został dodany i przypisany wszystkim członkom drużyny!');
 }

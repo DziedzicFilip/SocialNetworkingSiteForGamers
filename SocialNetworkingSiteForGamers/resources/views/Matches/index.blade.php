@@ -35,31 +35,35 @@
    <div id="calendar" class="mb-4"></div>
         
     </div>
-  <form class="mb-4">
-        <div class="row g-2 align-items-end">
-            <div class="col-md-4">
-                <label for="gameFilter" class="form-label">Game</label>
-                <select id="gameFilter" class="form-select" name="game_id">
-    <option value="">All Games</option>
-    @foreach($games as $game)
-        <option value="{{ $game->id }}">{{ $game->name }}</option>
-    @endforeach
-</select>
-            </div>
-            <div class="col-md-4">
-                <label for="statusFilter" class="form-label">Status</label>
-                <select id="statusFilter" class="form-select">
-                    <option selected>All</option>
-                    <option>Upcoming</option>
-                    <option>Finished</option>
-                    <option>Canceled</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <button type="submit" class="btn btn-primary w-100">Filter</button>
-            </div>
+ <form class="mb-4" method="GET">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label for="search" class="form-label">Szukaj tytułu</label>
+            <input type="text" name="search" id="search" class="form-control" value="{{ request('search') }}" placeholder="Tytuł meczu">
         </div>
-    </form>
+        <div class="col-md-3">
+            <label for="gameFilter" class="form-label">Game</label>
+            <select id="gameFilter" class="form-select" name="game_id">
+                <option value="">All Games</option>
+                @foreach($games as $game)
+                    <option value="{{ $game->id }}" {{ request('game_id') == $game->id ? 'selected' : '' }}>{{ $game->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="statusFilter" class="form-label">Status</label>
+            <select id="statusFilter" class="form-select" name="status">
+                <option value="">All</option>
+                <option value="upcoming" {{ request('status') == 'upcoming' ? 'selected' : '' }}>Upcoming</option>
+                <option value="played" {{ request('status') == 'played' ? 'selected' : '' }}>Played</option>
+                <option value="canceled" {{ request('status') == 'canceled' ? 'selected' : '' }}>Canceled</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+        </div>
+    </div>
+</form>
     <!-- Lista meczów -->
    <div class="card mb-4">
     <div class="card-header bg-light">
@@ -70,11 +74,9 @@
             @forelse($filteredMatches as $match)
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
-                        <strong>
-                            {{ $match->team1_name ?? 'Game' }}
-                            
-                            {{ $match->team2_name ?? $match->opponent_name ?? '' }}
-                        </strong>
+                       <strong>
+    {{ $match->title ?? 'Brak tytułu' }}
+</strong>
                         <div class="text-muted small">
                             {{ $match->match_date }} • {{ $match->game->name ?? '-' }}
                             @if($match->status === 'played')
@@ -88,9 +90,13 @@
                     </div>
                     <div>
                         <a href="{{ route('matches.show', $match->id) }}" class="btn btn-outline-info btn-sm">Details</a>
-                        @if($match->status !== 'played')
-                            <a href="{{ route('matches.cancel', $match->id) }}" class="btn btn-outline-danger btn-sm ms-2">Cancel</a>
-                        @endif
+                        @if($match->status !== 'played' && $match->status !== 'canceled')
+    <a href="{{ route('matches.cancel', $match->id) }}"
+       class="btn btn-outline-danger btn-sm ms-2"
+       onclick="return confirm('Are you sure you want to cancel this match?');">
+       Cancel
+    </a>
+@endif
                     </div>
                 </li>
             @empty

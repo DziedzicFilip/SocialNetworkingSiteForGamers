@@ -12,43 +12,44 @@ public function index(Request $request)
 {
     $user = Auth::user();
 
-    $query = GameMatch::whereHas('participants', function($q) use ($user) {
-        $q->where('user_id', $user->id);
-    })->with('game');
+    $query = GameMatch::with('game')
+        ->whereHas('matchParticipants', function($q) use ($user) {
+            $q->where('user_id', $user->id);
+        });
 
-    // Filtr gry
+    // Filtrowanie po tytule
+    if ($request->filled('search')) {
+        $query->where('title', 'like', '%' . $request->search . '%');
+    }
+
+    // Filtrowanie po grze
     if ($request->filled('game_id')) {
         $query->where('game_id', $request->game_id);
     }
 
-    // Filtr statusu
+    // Filtrowanie po statusie
     if ($request->filled('status')) {
-        $query->where('status', $request->status);
+        if ($request->status === 'upcoming') {
+            $query->where('status', '!=', 'played')->where('status', '!=', 'canceled');
+        } else {
+            $query->where('status', $request->status);
+        }
     }
+    $query->where('status', '!=', 'canceled'); // Wyklucz mecze anulowane
 
-    // Wyszukiwarka po nazwie przeciwnika
-    if ($request->filled('search')) {
-        $query->where('opponent_name', 'like', '%' . $request->search . '%');
-    }
-
-    $matches = $query->orderBy('match_date')->get();
-
-    // Dodaj zmienną filteredMatches (możesz ją filtrować osobno, jeśli chcesz)
-    $filteredMatches = $matches;
-
-    // Pobierz gry do selecta (jeśli chcesz dynamicznie)
+    $filteredMatches = $query->orderByDesc('match_date')->get();
     $games = Game::all();
 
-    // Generowanie danych dla kalendarza
-    $calendarEvents = $matches->map(function ($match) {
+    // Kalendarz
+    $calendarEvents = $filteredMatches->map(function($match) {
         return [
-            'title' => $match->game->name ?? 'Match',
-            'start' => $match->match_date->toIso8601String(),
-            'url' => route('matches.show', $match->id)
+            'title' => ($match->game->name ?? '') . '<br>' . e($match->title ?? ''),
+            'start' => $match->match_date,
+            'url' => route('matches.show', $match->id),
         ];
     });
 
-    return view('Matches.index', compact('matches', 'filteredMatches', 'games', 'calendarEvents'));
+    return view('Matches.index', compact('filteredMatches', 'games', 'calendarEvents'));
 }
 public function show($id)
 {
@@ -65,23 +66,44 @@ public function cancel($id)
 }
 public function update(Request $request, $id)
 {
-    $match = GameMatch::with(['matchParticipants.user'])->findOrFail($id);
+    $match = GameMatch::with(['matchParticipants'])->findOrFail($id);
 
-    $match->status = $request->input('status');
+    // Sprawdź, czy użytkownik jest właścicielem meczu (liderem teamu lub creator_id)
+    if (
+        Auth::id() !== optional($match->team)->leader_id &&
+        Auth::id() !== $match->creator_id
+    ) {
+        abort(403, 'Brak uprawnień do edycji tego meczu.');
+    }
+
+    // Walidacja
+    $validated = $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'nullable|string|max:2000',
+        'match_date' => 'required|date',
+        'status' => 'required|in:played,canceled',
+        'result' => 'required|in:win,lose',
+    ]);
+
+    // Aktualizacja danych meczu
+    $match->title = $validated['title'];
+    $match->description = $validated['description'];
+    $match->match_date = $validated['match_date'];
+    $match->status = $validated['status'];
     $match->save();
 
-    $result = $request->input('result'); // 'win' lub 'lose'
-
+    // Aktualizacja wyniku dla uczestników
     foreach ($match->matchParticipants as $participant) {
         if ($match->status === 'played') {
-            $participant->is_winner = ($result === 'win') ? 1 : 0;
+            $participant->is_winner = ($validated['result'] === 'win') ? 1 : 0;
         } else {
-            $participant->is_winner = null; // nie rozstrzygnięto
+            $participant->is_winner = null;
         }
         $participant->save();
     }
 
     return redirect()->route('matches.show', $match->id)
-        ->with('success', 'Wynik meczu został zapisany.');
+        ->with('success', 'Zmiany zostały zapisane.');
 }
+
 }

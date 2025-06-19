@@ -4,6 +4,10 @@ document.addEventListener("DOMContentLoaded", function () {
         {
             initialView: "dayGridMonth",
             events: window.calendarEvents,
+            eventContent: function (arg) {
+                // Renderuj HTML w tytule eventu
+                return { html: arg.event.title };
+            },
         }
     );
     calendar.render();

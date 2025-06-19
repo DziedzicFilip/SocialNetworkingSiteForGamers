@@ -9,9 +9,9 @@ class User extends Authenticatable
     protected $table = 'users';
     public $timestamps = false;
 
-    protected $fillable = [
-        'username', 'email', 'password_hash', 'created_at', 'profile_image', 'bio'
-    ];
+   protected $fillable = [
+    'username', 'email', 'password_hash', 'created_at', 'profile_image', 'bio', 'role'
+];
 
     public function teams()
     {

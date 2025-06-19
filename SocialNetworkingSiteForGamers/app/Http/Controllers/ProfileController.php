@@ -65,9 +65,17 @@ public function updatePassword(Request $request)
     $user = $request->user();
 
     $request->validate([
-        'current_password' => ['required'],
-        'password' => ['required', 'string', 'min:8', 'confirmed'],
-    ]);
+    'current_password' => ['required'],
+    'password' => [
+        'required',
+        'string',
+        'min:8',
+        'confirmed',
+        'regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/'
+    ],
+], [
+    'password.regex' => 'Hasło musi zawierać co najmniej jedną dużą literę, jedną cyfrę i jeden znak specjalny.',
+]);
 
     if (!Hash::check($request->current_password, $user->password_hash)) {
         return back()->withErrors(['current_password' => 'Current password is incorrect.']);

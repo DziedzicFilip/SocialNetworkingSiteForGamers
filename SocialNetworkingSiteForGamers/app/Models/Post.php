@@ -10,7 +10,7 @@ class Post extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'user_id', 'game_id', 'content', 'created_at', 'type', 'max_players', 'current_players', 'visible','play_time'
+        'title','user_id', 'game_id', 'content', 'created_at', 'type', 'max_players', 'current_players', 'visible','play_time'
     ];
 
     public function user()

@@ -51,9 +51,8 @@
     </h2>
     <div class="row mb-4">
         <div class="col-md-4">
-            @if($team->game && $team->game->logo_url)
-                <img src="{{ asset($team->game->logo_url) }}" alt="{{ $team->game->name }}" class="img-fluid rounded shadow">
-            @endif
+            @if($team->game && $team->game->image)
+          <img src="{{ asset($team->game->image) }}" alt="{{ $team->game->name }}" class="img-fluid rounded shadow"> @endif
         </div>
         <div class="col-md-8">
             <h5>Description</h5>
@@ -99,25 +98,23 @@
         <form method="POST" action="{{ route('teams.addMatch', $team->id) }}">
             @csrf
             <div class="mb-3">
-                <label for="match_date" class="form-label">Data i godzina meczu</label>
+                <label for="title" class="form-label">Tytuł </label>
+                <input type="text" name="title" id="title" class="form-control" required maxlength="255">
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Opis </label>
+                <textarea name="description" id="description" class="form-control" rows="3" maxlength="2000"></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="match_date" class="form-label">Data i godzina </label>
                 <input type="datetime-local" name="match_date" id="match_date" class="form-control" required>
             </div>
-           
-            <button type="submit" class="btn btn-success">Dodaj mecz</button>
+            <button type="submit" class="btn btn-success">Dodaj </button>
         </form>
     </div>
 </div>
 @endif
-            <div class="mt-3">
-                <strong>Next Match:</strong>
-                @if($nextMatch)
-                    <span class="badge bg-success">
-                        {{ $nextMatch->opponent_name ?? '-' }} - {{ \Carbon\Carbon::parse($nextMatch->match_date)->format('Y-m-d H:i') }}
-                    </span>
-                @else
-                    <span class="text-muted">No upcoming matches</span>
-                @endif
-            </div>
+          
             {{-- Opcja opuść/usuń drużynę --}}
             @if($team->leader_id === Auth::id())
                 <form method="POST" action="{{ route('teams.delete', $team->id) }}" class="mt-4 d-inline">
@@ -141,6 +138,8 @@
     </div>
 
     <h4 class="mb-3 mt-5 text-primary">Team Members</h4>
+
+</form>
     <div class="row">
        @php
     // Zbierz wszystkich członków (members + leader, bez duplikatów)
