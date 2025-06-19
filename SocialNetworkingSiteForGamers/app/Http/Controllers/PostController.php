@@ -23,7 +23,7 @@ class PostController extends Controller
 }
     $validated = $request->validate([
         'title' => 'required|string|max:255',
-        'content' => 'required|string|max:500',
+        'content' => 'required|string|max:1500',
         'game_id' => 'nullable|exists:games,id',
         'type' => 'required|in:discussion,casual,team',
         'max_players' => 'nullable|integer|min:1',
@@ -58,7 +58,7 @@ class PostController extends Controller
     ]);
 }
 
-    return redirect()->back()->with('status', 'Post added!');
+    return redirect()->back()->with('status', 'Post dodany!');
 }
 
   public function apply($id)
@@ -124,7 +124,7 @@ public function acceptRequest($id)
         return back()->with('status', 'Nie możesz dołączyć do innej drużyny w tej grze, bo jesteś liderem własnej!');
     }
     if ($userTeams > 0) {
-        return back()->with('status', 'Too late – user already joined another team in this game.');
+        return back()->with('status', 'Zapoźno juz dolaczyłeś się do drużyny w tej grze!');
     }
 }
 
@@ -175,7 +175,7 @@ public function acceptRequest($id)
     }
 }
 
-    return back()->with('status', 'Request accepted!');
+    return back()->with('status', 'Zgłoszenie zakceptowane!');
 }
 public function rejectRequest($id)
 {
@@ -183,7 +183,7 @@ public function rejectRequest($id)
     $request->status = 'rejected';
     $request->save();
 
-    return back()->with('status', 'Request rejected!');
+    return back()->with('status', 'Zgłoszenie odrzucone!');
 }
 
 public function myPosts(Request $request)

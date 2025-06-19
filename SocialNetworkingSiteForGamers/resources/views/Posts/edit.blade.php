@@ -13,7 +13,7 @@
         </div>
         <div class="mb-3">
             <label class="form-label">Treść</label>
-            <textarea name="content" class="form-control" rows="5" required>{{ old('content', $post->content) }}</textarea>
+            <textarea name="content" class="form-control" rows="10" required>{{ old('content', $post->content) }}</textarea>
         </div>
         <div class="mb-3">
             <label class="form-label">Typ</label>

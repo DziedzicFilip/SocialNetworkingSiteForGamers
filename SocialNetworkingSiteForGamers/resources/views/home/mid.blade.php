@@ -64,53 +64,54 @@
 </div>
 
 <div class="posts">
-  @foreach($posts as $post)
-    <div class="card p-3 mb-3">
-      <div class="d-flex align-items-center mb-3">
-        @if($post->game && $post->game->image)
-         <img src="{{ asset($post->game->image) }}" alt="{{ $team->game->name }}" alt="Logo gry" class="me-2" style="width: 150px; height: 150px;">
+@foreach($posts as $post)
+<div class="card p-3 mb-3 shadow-sm">
+  <div class="d-flex align-items-start">
+    {{-- Awatar użytkownika --}}
+    <img src="{{ asset($post->user->profile_image ?? 'IMG/LogoArcadeUnionDefault.png') }}"
+         alt="avatar"
+         class="rounded-circle me-3"
+         style="width: 56px; height: 56px; object-fit: cover; border: 2px solid #4f8cff;">
+    <div class="flex-grow-1">
+      <div class="d-flex align-items-center mb-1">
+        <span class="fw-bold me-2">{{ $post->user->username }}</span>
+        <small class="text-muted">
+          @if($post->play_time)
+            {{ \Carbon\Carbon::parse($post->play_time)->format('Y-m-d H:i') }}
+          @else
+            {{ $post->created_at }}
+          @endif
+        </small>
+        @if($post->team)
+          <span class="badge bg-secondary ms-2">Drużyna: {{ $post->team->name }}</span>
         @endif
-        <div>
-          <h5 class="mb-1">{{ $post->title }}</h5>
-          <small class="text-muted">
-            @if($post->play_time)
-                {{ \Carbon\Carbon::parse($post->play_time)->format('Y-m-d H:i') }}
-            @else
-                {{ $post->created_at }}
-            @endif
-          </small>
-          <div class="mt-1">
-            <span class="fw-bold">{{ $post->user->username }}</span>
-            @if($post->team)
-              <span class="text-muted">| Drużyna: {{ $post->team->name }}</span>
-            @endif
-          </div>
-        </div>
       </div>
+      <h5 class="mb-1">{{ $post->title }}</h5>
+      <p class="mb-2" style="white-space: pre-line;">{{ $post->content }}</p>
       <div class="mb-2">
-        <span class="badge bg-primary me-2">Typ: {{ ucfirst(__($post->type === 'discussion' ? 'Dyskusja' : ($post->type === 'casual' ? 'Luźna gra' : 'Rekrutacja do drużyny'))) }}</span>
+        <span class="badge bg-primary me-2">
+          Typ: {{ $post->type === 'discussion' ? 'Dyskusja' : ($post->type === 'casual' ? 'Luźna gra' : 'Rekrutacja do drużyny') }}
+        </span>
         @if($post->game)
           <span class="badge bg-success">Gra: {{ $post->game->name }}</span>
         @endif
       </div>
-      <p class="mb-2">{{ $post->content }}</p>
-
       @if($post->type === 'casual')
         <div>
           <strong>Data gry:</strong> {{ $post->play_time ? \Carbon\Carbon::parse($post->play_time)->format('Y-m-d H:i') : '-' }}
         </div>
         @if($post->max_players)
-            <div class="mb-2">
-                <strong>Gracze:</strong> {{ $post->current_players }}/{{ $post->max_players }}
-            </div>
+          <div class="mb-2">
+            <strong>Gracze:</strong> {{ $post->current_players }}/{{ $post->max_players }}
+          </div>
         @endif
         @if($post->already_applied)
-            <div class="alert alert-info mt-2 mb-0 p-1">Już zapisałeś się</div>
+          <div class="alert alert-info mt-2 mb-0 p-1">Już zapisałeś się</div>
         @else
-            <form action="{{ route('posts.apply', $post->id) }}" method="POST" class="mt-2">
-                @csrf
-                <button type="submit" class="btn btn-outline-primary mb-2">Zapisz się</button>
-            </form>
+          <form action="{{ route('posts.apply', $post->id) }}" method="POST" class="mt-2">
+            @csrf
+            <button type="submit" class="btn btn-outline-primary mb-2">Zapisz się</button>
+          </form>
         @endif
       @endif
 
@@ -132,41 +133,22 @@
         @endphp
 
         @if(!$user)
-            <div class="text-muted">Zaloguj się, aby dołączyć do drużyny.</div>
+          <div class="text-muted">Zaloguj się, aby dołączyć do drużyny.</div>
         @elseif($isLeader)
-            <div class="text-muted">Jesteś liderem drużyny w tej grze.</div>
+          <div class="text-muted">Jesteś liderem drużyny w tej grze.</div>
         @elseif($alreadyInTeamForThisGame)
-            <div class="text-muted">Należysz już do drużyny w tej grze.</div>
+          <div class="text-muted">Należysz już do drużyny w tej grze.</div>
         @elseif($post->already_applied)
-            <div class="alert alert-info mt-2 mb-0 p-1">Już zgłosiłeś się do tej drużyny!</div>
+          <div class="alert alert-info mt-2 mb-0 p-1">Już zgłosiłeś się do tej drużyny!</div>
         @else
-            <form action="{{ route('posts.apply', $post->id) }}" method="POST" class="mt-2">
-                @csrf
-                <button type="submit" class="btn btn-outline-primary mb-2">Dołącz do drużyny</button>
-            </form>
+          <form action="{{ route('posts.apply', $post->id) }}" method="POST" class="mt-2">
+            @csrf
+            <button type="submit" class="btn btn-outline-primary mb-2">Dołącz do drużyny</button>
+          </form>
         @endif
       @endif
-
-      <!-- 
-      <button class="btn btn-link p-0 mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#commentsCollapse{{ $post->id }}" aria-expanded="false" aria-controls="commentsCollapse{{ $post->id }}">
-        Pokaż/Ukryj komentarze
-      </button>
-      <div class="collapse" id="commentsCollapse{{ $post->id }}">
-        <div class="card card-body bg-light">
-          @foreach($post->comments ?? [] as $comment)
-            <div class="mb-2">
-              <strong>{{ $comment->user->username }}</strong>: {{ $comment->content }}
-            </div>
-          @endforeach
-          <form>
-            <div class="mb-2">
-              <input type="text" class="form-control form-control-sm" placeholder="Dodaj komentarz...">
-            </div>
-            <button type="submit" class="btn btn-primary btn-sm">Skomentuj</button>
-          </form>
-        </div>
-      </div>
-       -->
     </div>
-  @endforeach
+  </div>
+</div>
+@endforeach
 </div>
