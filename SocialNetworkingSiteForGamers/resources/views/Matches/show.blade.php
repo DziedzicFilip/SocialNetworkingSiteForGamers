@@ -10,7 +10,15 @@
             <p><strong>Tytuł:</strong> {{ $match->title ?? 'Brak tytułu' }}</p>
             <p><strong>Opis:</strong> {{ $match->description ?? 'Brak opisu' }}</p>
             <p><strong>Gra:</strong> {{ $match->game->name ?? 'Brak danych' }}</p>
-            <p><strong>Status:</strong> {{ $match->status }}</p>
+            <p><strong>Status:</strong>
+                @if($match->status == 'played')
+                    Rozegrany
+                @elseif($match->status == 'canceled')
+                    Odwołany
+                @else
+                    {{ $match->status }}
+                @endif
+            </p>
             <p><strong>Data i godzina:</strong> {{ $match->match_date }}</p>
             <p><strong>Miejsce/Platforma:</strong> {{ $match->location ?? 'Online' }}</p>
         </div>

@@ -1,7 +1,6 @@
-
 @extends('main')
 
-@section('title', 'My Profile')
+@section('title', 'Mój profil')
 
 @push('head')
 <link rel="stylesheet" href="{{ asset('css/home.css') }}">
@@ -56,33 +55,32 @@
 @section('content')
 <div class="container py-4">
   <div class="profile-header">
-    <img src="{{ asset($user->profile_image ?? 'IMG/default-avatar.jpg') }}" alt="Your Avatar" class="profile-avatar">
+    <img src="{{ asset($user->profile_image ?? 'IMG/default-avatar.jpg') }}" alt="Twój avatar" class="profile-avatar">
     <div>
         <div class="profile-username">{{ $user->username }}</div>
-<div class="profile-bio">{{ $user->bio }}</div>
-        <a href="{{ route('profile.edit') }}" class="btn btn-outline-primary mt-3">Edit Profile</a>
+        <div class="profile-bio">{{ $user->bio }}</div>
+        <a href="{{ route('profile.edit') }}" class="btn btn-outline-primary mt-3">Edytuj profil</a>
     </div>
   </div>
 
     <div class="row">
         <div class="col-md-6">
             <div class="profile-stats-card">
-                <h5>General Statistics</h5>
+                <h5>Statystyki ogólne</h5>
                 <ul class="mb-0">
-                    <li>Total Matches: <strong>{{ $totalMatches }}</strong></li>
-                    <li>Wins: <strong>{{ $wins }}</strong></li>
-                    <li>Losses: <strong>{{ $losses }}</strong></li>
-                    <li>Win Rate: <strong>{{ $winRate }}%</strong></li>
-                    
+                    <li>Wszystkie mecze: <strong>{{ $totalMatches }}</strong></li>
+                    <li>Zwycięstwa: <strong>{{ $wins }}</strong></li>
+                    <li>Porażki: <strong>{{ $losses }}</strong></li>
+                    <li>Procent zwycięstw: <strong>{{ $winRate }}%</strong></li>
                 </ul>
             </div>
         </div>
         <div class="col-md-6">
             <div class="profile-stats-card">
-                <h5>Games Played</h5>
+                <h5>Rozegrane gry</h5>
                 <ul class="profile-games-list mb-0">
                     @foreach($games as $game)
-                        <li>{{ $game->name }}: <strong>{{ $gamesPlayed[$game->id] ?? 0 }}</strong> matches</li>
+                        <li>{{ $game->name }}: <strong>{{ $gamesPlayed[$game->id] ?? 0 }}</strong> mecz(y)</li>
                     @endforeach
                 </ul>
             </div>
@@ -90,11 +88,10 @@
     </div>
 
    <div class="profile-stats-card mt-4">
-    <h5>Recent Matches</h5>
+    <h5>Ostatnie mecze</h5>
     <ul class="mb-0">
         @foreach($recentMatches as $match)
             @php
-                // Pobierz uczestnika tego meczu dla użytkownika
                 $participant = \App\Models\MatchParticipant::where('match_id', $match->id)
                     ->where('user_id', $user->id)
                     ->first();
@@ -104,14 +101,14 @@
                 {{ $match->match_date }}:
                 @if($match->status === 'played')
                     @if($isWin)
-                        <span class="text-success">Win</span>
+                        <span class="text-success">Wygrana</span>
                     @else
-                        <span class="text-danger">Loss</span>
+                        <span class="text-danger">Porażka</span>
                     @endif
                 @else
-                    <span class="text-warning">Not played</span>
+                    <span class="text-warning">Nierozegrany</span>
                 @endif
-                (Game: {{ $match->game->name ?? 'Unknown' }})
+                (Gra: {{ $match->game->name ?? 'Nieznana' }})
             </li>
         @endforeach
     </ul>
