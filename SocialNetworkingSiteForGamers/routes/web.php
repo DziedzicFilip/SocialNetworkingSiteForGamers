@@ -20,12 +20,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-Route::get('/profile/me', function () { return view('profile.myProfile');})->name('profile.me');
+//Route::get('/profile/me', function () { return view('profile.myProfile');})->name('profile.me');
 Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+Route::get('/teams/create', [TeamController::class, 'create'])->name('teams.create');
+    Route::post('/teams', [TeamController::class, 'store'])->name('teams.store');
+     Route::get('/teams', [TeamController::class, 'index'])->name('teams.index');
+  
+Route::post('/teams/{team}/add-match', [TeamController::class, 'addMatch'])->name('teams.addMatch');
 });
-Route::get('/teams/my', function () {
-    return view('Teams.index'); 
-})->middleware(['auth'])->name('teams.my');
+
 
 Route::get('/home', [HomeController::class, 'index'])
     ->middleware(['auth'])
@@ -65,6 +68,7 @@ Route::get('/matches/{id}', [MatchesController::class, 'show'])
     Route::get('/matches/{id}', [MatchesController::class, 'show'])->name('matches.show');
 Route::get('/matches/{id}', [MatchesController::class, 'show'])->name('matches.show');
 Route::put('/matches/{id}', [MatchesController::class, 'update'])->name('matches.update');
+
 
 
     require __DIR__.'/auth.php';

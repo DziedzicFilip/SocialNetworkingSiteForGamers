@@ -13,6 +13,7 @@ use App\Models\Game;
 use App\Models\User;
 use App\Models\Team;
 use App\Models\MatchParticipant;
+use App\Models\TeamMember;
 
 class ProfileController extends Controller
 {
@@ -104,6 +105,16 @@ public function updatePassword(Request $request)
 public function myProfile()
 {
     $user = Auth::user();
+
+    // ID drużyn, gdzie jest członkiem
+    $memberTeamIds = \App\Models\TeamMember::where('user_id', $user->id)->pluck('team_id')->toArray();
+
+    // ID drużyn, gdzie jest liderem
+    $leaderTeamIds = \App\Models\Team::where('leader_id', $user->id)->pluck('id')->toArray();
+
+    // Połącz i usuń duplikaty
+    $allTeamIds = array_unique(array_merge($memberTeamIds, $leaderTeamIds));
+    $teamsCount = count($allTeamIds);
 
 // Pobierz rozegrane mecze użytkownika
 $matchIds = MatchParticipant::where('user_id', $user->id)->pluck('match_id');

@@ -71,9 +71,9 @@
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
                         <strong>
-                            {{ $match->team1_name ?? 'You' }}
-                            vs
-                            {{ $match->team2_name ?? $match->opponent_name ?? 'Opponent' }}
+                            {{ $match->team1_name ?? 'Game' }}
+                            
+                            {{ $match->team2_name ?? $match->opponent_name ?? '' }}
                         </strong>
                         <div class="text-muted small">
                             {{ $match->match_date }} • {{ $match->game->name ?? '-' }}

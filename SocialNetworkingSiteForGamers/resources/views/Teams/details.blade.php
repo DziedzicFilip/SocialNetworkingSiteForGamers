@@ -71,7 +71,7 @@
     @php
         $participants = \App\Models\MatchParticipant::where('match_id', $match->id)->get();
         $opponent = $participants->firstWhere('team_id', '!=', $team->id);
-        $opponentName = $opponent ? optional(\App\Models\Team::find($opponent->team_id))->name : 'Unknown';
+        
         // Czy nasz team wygrał?
         $ourParticipant = $participants->firstWhere('team_id', $team->id);
         $isWin = $ourParticipant && $ourParticipant->is_winner;
@@ -87,16 +87,32 @@
         @else
             <span class="text-warning">Not played</span>
         @endif
-        vs {{ $opponentName }}
+       
         ({{ $match->score ?? '-' }})
     </li>
 @endforeach
 </ul>
+@if($team->leader_id === Auth::id())
+<div class="card my-4">
+    <div class="card-body">
+        <h5 class="card-title">Dodaj nowy Event zespołowy</h5>
+        <form method="POST" action="{{ route('teams.addMatch', $team->id) }}">
+            @csrf
+            <div class="mb-3">
+                <label for="match_date" class="form-label">Data i godzina meczu</label>
+                <input type="datetime-local" name="match_date" id="match_date" class="form-control" required>
+            </div>
+           
+            <button type="submit" class="btn btn-success">Dodaj mecz</button>
+        </form>
+    </div>
+</div>
+@endif
             <div class="mt-3">
                 <strong>Next Match:</strong>
                 @if($nextMatch)
                     <span class="badge bg-success">
-                        vs {{ $nextMatch->opponent_name ?? '-' }} - {{ \Carbon\Carbon::parse($nextMatch->match_date)->format('Y-m-d H:i') }}
+                        {{ $nextMatch->opponent_name ?? '-' }} - {{ \Carbon\Carbon::parse($nextMatch->match_date)->format('Y-m-d H:i') }}
                     </span>
                 @else
                     <span class="text-muted">No upcoming matches</span>

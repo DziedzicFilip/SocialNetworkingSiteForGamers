@@ -7,11 +7,44 @@
 @endpush
 
 @section('content')
-{{-- Debug: Wyświetl kolekcję drużyn (usuń w produkcji) --}}
-{{-- <pre>{{ print_r($teams, true) }}</pre> --}}
-
 <div class="container py-4">
     <h2 class="mb-4 text-primary">My Teams</h2>
+      <div class="mb-3">
+        <a href="{{ route('teams.create') }}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Stwórz nową drużynę
+        </a>
+    </div>
+    {{-- WYSZUKIWARKA I FILTRY --}}
+    <form method="GET" class="mb-4">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Nazwa drużyny</label>
+                <input type="text" name="search" id="search" value="{{ request('search') }}" class="form-control" placeholder="Wpisz nazwę drużyny">
+            </div>
+            <div class="col-md-3">
+                <label for="game" class="form-label">Gra</label>
+                <select name="game" id="game" class="form-select">
+                    <option value="">Wszystkie gry</option>
+                    @foreach($games as $game)
+                        <option value="{{ $game->id }}" {{ request('game') == $game->id ? 'selected' : '' }}>
+                            {{ $game->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="role" class="form-label">Rola</label>
+                <select name="role" id="role" class="form-select">
+                    <option value="">Wszystkie role</option>
+                    <option value="leader" {{ request('role') == 'leader' ? 'selected' : '' }}>Lider</option>
+                    <option value="member" {{ request('role') == 'member' ? 'selected' : '' }}>Członek</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Szukaj</button>
+            </div>
+        </div>
+    </form>
 
     @if($teams->isEmpty())
         <div class="alert alert-info">Nie należysz do żadnej drużyny.</div>

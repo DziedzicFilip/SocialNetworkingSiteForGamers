@@ -72,11 +72,11 @@ public function update(Request $request, $id)
 
     $result = $request->input('result'); // 'win' lub 'lose'
 
-  foreach ($match->matchParticipants as $participant) {
+    foreach ($match->matchParticipants as $participant) {
         if ($match->status === 'played') {
             $participant->is_winner = ($result === 'win') ? 1 : 0;
         } else {
-            $participant->is_winner = 0;
+            $participant->is_winner = null; // nie rozstrzygnięto
         }
         $participant->save();
     }

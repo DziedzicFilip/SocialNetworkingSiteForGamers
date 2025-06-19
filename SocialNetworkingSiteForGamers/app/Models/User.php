@@ -42,4 +42,5 @@ class User extends Authenticatable
 {
     return $this->password_hash;
 }
+
 }

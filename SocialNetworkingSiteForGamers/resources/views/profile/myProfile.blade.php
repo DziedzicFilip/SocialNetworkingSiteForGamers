@@ -73,7 +73,7 @@
                     <li>Wins: <strong>{{ $wins }}</strong></li>
                     <li>Losses: <strong>{{ $losses }}</strong></li>
                     <li>Win Rate: <strong>{{ $winRate }}%</strong></li>
-                    <li>Teams: <strong>{{ $teamsCount }}</strong></li>
+                    
                 </ul>
             </div>
         </div>
