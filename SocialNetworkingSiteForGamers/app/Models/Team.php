@@ -41,10 +41,10 @@ class Team extends Model
    public function matches()
 {
     return $this->belongsToMany(
-        GameMatch::class,      // model meczu
-        'match_participants',  // tabela pośrednia
-        'team_id',             // klucz obcy do teamu w match_participants
-        'match_id'             // klucz obcy do meczu w match_participants
+        GameMatch::class,      
+        'match_participants',  
+        'team_id',             
+        'match_id'             
     );
 }
 }

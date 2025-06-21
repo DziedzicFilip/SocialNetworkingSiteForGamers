@@ -6,7 +6,7 @@
 <div class="container py-4">
     <h2 class="mb-4">Moje posty</h2>
 
-    {{-- Filtry --}}
+
     <form method="GET" class="mb-3">
         <div class="row g-2">
             <div class="col-md-3">
@@ -41,7 +41,7 @@
         </div>
     </form>
 
-    {{-- Lista postów --}}
+
     <table class="table table-bordered">
         <thead>
             <tr>

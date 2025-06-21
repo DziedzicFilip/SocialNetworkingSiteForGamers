@@ -45,7 +45,7 @@ public function update(Request $request)
     $user->email = $validated['email'];
     $user->bio = $validated['bio'] ?? $user->bio;
 
-    // Obsługa uploadu avatara
+   
     if ($request->hasFile('profile_image')) {
     $file = $request->file('profile_image');
     $filename = 'avatar_' . $user->id . '.' . $file->getClientOriginalExtension();
@@ -114,24 +114,24 @@ public function myProfile()
 {
     $user = Auth::user();
 
-    // ID drużyn, gdzie jest członkiem
+ 
     $memberTeamIds = \App\Models\TeamMember::where('user_id', $user->id)->pluck('team_id')->toArray();
 
-    // ID drużyn, gdzie jest liderem
+ 
     $leaderTeamIds = \App\Models\Team::where('leader_id', $user->id)->pluck('id')->toArray();
 
-    // Połącz i usuń duplikaty
+    
     $allTeamIds = array_unique(array_merge($memberTeamIds, $leaderTeamIds));
     $teamsCount = count($allTeamIds);
 
-// Pobierz rozegrane mecze użytkownika
+
 $matchIds = MatchParticipant::where('user_id', $user->id)->pluck('match_id');
 $matches = GameMatch::whereIn('id', $matchIds)
     ->where('status', 'played')
     ->with('game')
     ->get();
 
-// Wygrane mecze (gdzie user jest zwycięzcą w match_participants)
+
 $wins = MatchParticipant::where('user_id', $user->id)
     ->whereIn('match_id', $matches->pluck('id'))
     ->where('is_winner', 1)
@@ -141,14 +141,14 @@ $totalMatches = $matches->count();
 $losses = $totalMatches - $wins;
 $winRate = $totalMatches > 0 ? round(($wins / $totalMatches) * 100) : 0;
 
-    // Gry, w których użytkownik brał udział
+
     $gamesPlayed = $matches->groupBy('game_id')->map->count();
     $games = Game::whereIn('id', $gamesPlayed->keys())->get();
 
-    // Ostatnie mecze
+ 
     $recentMatches = $matches->sortByDesc('match_date')->take(5);
 
-    // Liczba drużyn użytkownika
+  
     $teamsCount = $user->teams->count();
 
     return view('profile.myProfile', compact(
@@ -159,8 +159,7 @@ public function show($id)
 {
     $user = User::findOrFail($id);
 
-    // Pobierz wszystkie mecze, w których użytkownik brał udział
-  // Pobierz rozegrane mecze użytkownika
+
 $matchIds = MatchParticipant::where('user_id', $user->id)->pluck('match_id');
 $matches = GameMatch::whereIn('id', $matchIds)
     ->where('status', 'played')
@@ -176,14 +175,13 @@ $totalMatches = $matches->count();
 $losses = $totalMatches - $wins;
 $winRate = $totalMatches > 0 ? round(($wins / $totalMatches) * 100) : 0;
 
-    // Liczba drużyn użytkownika
+
     $teamsCount = $user->teams()->count();
 
-    // Gry, w których użytkownik grał
+
     $gamesPlayed = $matches->groupBy('game_id')->map->count();
     $games = Game::whereIn('id', $gamesPlayed->keys())->get();
 
-    // Ostatnie mecze
     $recentMatches = $matches->sortByDesc('match_date')->take(5);
 
     return view('profile.myProfile', compact(

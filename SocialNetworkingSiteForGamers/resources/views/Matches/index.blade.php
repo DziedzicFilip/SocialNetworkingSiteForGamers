@@ -26,7 +26,6 @@
 <div class="container py-4">
     <h2 class="mb-4 text-primary">Moje mecze</h2>
 
-    <!-- Kalendarz (placeholder) -->
     <div id="calendar" class="mb-4"></div>
 </div>
 
@@ -60,7 +59,7 @@
     </div>
 </form>
 
-<!-- Lista meczów -->
+
 <div class="card mb-4">
     <div class="card-header bg-light">
         <h5 class="mb-0">Wszystkie moje mecze</h5>

@@ -1,48 +1,116 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+@extends('main')
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+@section('title', 'Logowanie')
+
+@push('head')
+<link rel="stylesheet" href="{{ asset('home.css') }}">
+<style>
+    body {
+        background: #f4f4f4;
+    }
+    .login-panel {
+        max-width: 400px;
+        margin: 60px auto 0 auto;
+        background: var(--color-primary);
+        border-radius: 14px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+        padding: 2.5rem 2rem 2rem 2rem;
+        color: #fff;
+    }
+    .login-panel .logo {
+        width: 70px;
+        display: block;
+        margin: 0 auto 1rem auto;
+    }
+    .login-panel h2 {
+        color: #4f8cff;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        letter-spacing: 1px;
+    }
+    .login-panel label {
+        color: #b0b8c1;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+    }
+    .login-panel input {
+        background: #f4f4f4;
+        color: #23272f;
+        border-radius: 6px;
+        border: 1px solid #444;
+        margin-bottom: 1rem;
+    }
+    .login-panel input:focus {
+        border-color: #4f8cff;
+        box-shadow: none;
+    }
+    .login-panel .btn-primary {
+        background: #4f8cff;
+        border: none;
+        font-weight: bold;
+        font-size: 1.1rem;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    .login-panel .btn-primary:hover {
+        background: #3973cc;
+    }
+    .login-panel .register-link {
+        display: block;
+        text-align: center;
+        margin-top: 1.5rem;
+        color: #b0b8c1;
+    }
+    .login-panel .register-link a {
+        color: #4f8cff;
+        text-decoration: underline;
+    }
+    .login-panel .alert {
+        margin-bottom: 1rem;
+    }
+</style>
+@endpush
+
+@section('content')
+<div class="container">
+    <div class="login-panel">
+        <img src="{{ asset('IMG/LogoArcadeUnionDefault.png') }}" alt="ArcadeUnion Logo" class="logo">
+        <h2>Zaloguj się</h2>
+
+        @if(session('status'))
+            <div class="alert alert-success">{{ session('status') }}</div>
+        @endif
+
+        <form method="POST" action="{{ route('login') }}">
+            @csrf
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Adres e-mail</label>
+                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror"
+                       name="email" value="{{ old('email') }}" required autofocus autocomplete="username">
+                @error('email')
+                    <div class="text-danger small mt-1">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="mb-2">
+                <label for="password" class="form-label">Hasło</label>
+                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror"
+                       name="password" required autocomplete="current-password">
+                @error('password')
+                    <div class="text-danger small mt-1">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <button type="submit" class="btn btn-primary">Zaloguj się</button>
+        </form>
+
+        <div class="register-link">
+            Nie masz konta?
+            <a href="{{ route('register') }}">Zarejestruj się</a>
         </div>
-
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Remember Me 
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800" name="remember">
-                <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Remember me') }}</span>
-            </label>
-        </div>-->
-
-        <div class="flex items-center justify-end mt-4">
-<!--    
-        @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif-->
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+    </div>
+</div>
+@endsection

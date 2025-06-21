@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg">
   <div class="container">
-    <a class="navbar-brand" href="{{ route('home') }}">ScrimPlanner</a>
+    <a class="navbar-brand" href="{{ route('home') }}">ArcadeUnion</a>
     <ul class="navbar-nav">
       <li class="nav-item">
         <a class="nav-link" href="{{ route('home') }}">Ogłoszenia</a>

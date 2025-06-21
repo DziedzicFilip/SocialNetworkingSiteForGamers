@@ -10,6 +10,7 @@ use App\Models\TeamMember;
 use App\Models\Team;
 use App\Models\GameMatch;
 use App\Models\Game;
+use App\Models\MatchParticipant;
 class PostController extends Controller
 
 {
@@ -45,7 +46,7 @@ class PostController extends Controller
     $post->team_id = $validated['team_id'] ?? null;
     $post->save();
 
-    // Dodaj mecz jeśli to ogłoszenie o grę
+  
    if (in_array($post->type, ['casual', 'team']) && $post->game_id && $post->play_time) {
     GameMatch::create([
         'game_id' => $post->game_id,
@@ -66,7 +67,7 @@ class PostController extends Controller
     $user = Auth::user();
     $post = Post::findOrFail($id);
 
-    // Tylko dla postów typu 'team' blokuj dołączanie, jeśli user jest już w teamie tej gry
+
     if ($post->type === 'team') {
         $userTeams = Team::whereHas('members', function($q) use ($user) {
             $q->where('user_id', $user->id);
@@ -110,12 +111,12 @@ public function acceptRequest($id)
     $userId = $request->user_id;
 
    if ($post->type === 'team') {
-    // Sprawdź, czy user już jest w teamie tej gry
+
     $userTeams = Team::whereHas('members', function($q) use ($userId) {
         $q->where('user_id', $userId);
     })->where('game_id', $post->game_id)->count();
 
-    // Sprawdź, czy user jest liderem teamu tej gry
+
     $isLeader = Team::where('game_id', $post->game_id)
         ->where('leader_id', $userId)
         ->exists();
@@ -128,7 +129,7 @@ public function acceptRequest($id)
     }
 }
 
-    // Akceptuj zgłoszenie
+ 
     $request->status = 'accepted';
     $request->save();
 
@@ -138,15 +139,15 @@ public function acceptRequest($id)
     }
     $post->save();
 
-    // Dodaj do teamu
+
     if ($post->type === 'team' && $post->team_id) {
-        \App\Models\TeamMember::firstOrCreate([
+       TeamMember::firstOrCreate([
             'team_id' => $post->team_id,
             'user_id' => $userId,
         ]);
     }
 
-    // Oznacz inne zgłoszenia tego usera do innych teamów w tej grze jako "expired"
+
     PostParticipant::where('user_id', $userId)
         ->whereHas('post', function($q) use ($post) {
             $q->where('game_id', $post->game_id)
@@ -155,20 +156,20 @@ public function acceptRequest($id)
         ->where('status', 'pending')
         ->update(['status' => 'expired']);
 
-    // Dodaj lidera i zaakceptowanego gracza do match_participants
+
  if ($post->type === 'casual') {
     $match = \App\Models\GameMatch::where('game_id', $post->game_id)
         ->where('match_date', $post->play_time)
         ->first();
 
     if ($match) {
-        // Twórca posta (organizator casual gry)
-        \App\Models\MatchParticipant::firstOrCreate([
+
+       MatchParticipant::firstOrCreate([
             'match_id' => $match->id,
             'user_id' => $post->user_id,
         ]);
-        // Akceptowany gracz
-        \App\Models\MatchParticipant::firstOrCreate([
+
+       MatchParticipant::firstOrCreate([
             'match_id' => $match->id,
             'user_id' => $userId,
         ]);
@@ -192,7 +193,7 @@ public function myPosts(Request $request)
 
     $query = Post::where('user_id', $user->id);
 
-    // Filtry
+    
     if ($request->filled('search')) {
         $query->where('title', 'like', '%' . $request->search . '%');
     }
@@ -218,9 +219,9 @@ public function edit($id)
     if (Auth::id() !== $post->user_id) {
     abort(403, 'Brak dostępu');
 }
-    // lub sprawdź Auth::id() === $post->user_id
-    $games = \App\Models\Game::all();
-    $teams = \App\Models\Team::where('game_id', $post->game_id)->get();
+
+    $games = Game::all();
+    $teams = Team::where('game_id', $post->game_id)->get();
     return view('Posts.edit', compact('post', 'games', 'teams'));
 }
 

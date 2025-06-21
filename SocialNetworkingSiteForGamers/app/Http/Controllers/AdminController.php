@@ -54,12 +54,12 @@ public function updateGame(Request $request)
     ]);
     $game = Game::findOrFail($request->game_id);
 
-    // Zmień nazwę gry tylko jeśli podano nową
+    
     if ($request->filled('name')) {
         $game->name = $request->name;
     }
 
-    // Zmień zdjęcie tylko jeśli podano nowe
+
     if ($request->hasFile('image')) {
         $imageName = uniqid().'_'.$request->file('image')->getClientOriginalName();
         $request->file('image')->move(public_path('IMG'), $imageName);

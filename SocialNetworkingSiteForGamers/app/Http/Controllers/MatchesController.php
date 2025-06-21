@@ -17,17 +17,17 @@ public function index(Request $request)
             $q->where('user_id', $user->id);
         });
 
-    // Filtrowanie po tytule
+    
     if ($request->filled('search')) {
         $query->where('title', 'like', '%' . $request->search . '%');
     }
 
-    // Filtrowanie po grze
+    
     if ($request->filled('game_id')) {
         $query->where('game_id', $request->game_id);
     }
 
-    // Filtrowanie po statusie
+    
     if ($request->filled('status')) {
         if ($request->status === 'upcoming') {
             $query->where('status', '!=', 'played')->where('status', '!=', 'canceled');
@@ -35,12 +35,12 @@ public function index(Request $request)
             $query->where('status', $request->status);
         }
     }
-    $query->where('status', '!=', 'canceled'); // Wyklucz mecze anulowane
+    $query->where('status', '!=', 'canceled'); 
 
     $filteredMatches = $query->orderByDesc('match_date')->get();
     $games = Game::all();
 
-    // Kalendarz
+    
     $calendarEvents = $filteredMatches->map(function($match) {
         return [
             'title' => ($match->game->name ?? '') . '<br>' . e($match->title ?? ''),
@@ -68,7 +68,7 @@ public function update(Request $request, $id)
 {
     $match = GameMatch::with(['matchParticipants'])->findOrFail($id);
 
-    // Sprawdź, czy użytkownik jest właścicielem meczu (liderem teamu lub creator_id)
+    
     if (
         Auth::id() !== optional($match->team)->leader_id &&
         Auth::id() !== $match->creator_id
@@ -76,7 +76,7 @@ public function update(Request $request, $id)
         abort(403, 'Brak uprawnień do edycji tego meczu.');
     }
 
-    // Walidacja
+    
     $validated = $request->validate([
         'title' => 'required|string|max:255',
         'description' => 'nullable|string|max:2000',
@@ -85,14 +85,13 @@ public function update(Request $request, $id)
         'result' => 'required|in:win,lose',
     ]);
 
-    // Aktualizacja danych meczu
     $match->title = $validated['title'];
     $match->description = $validated['description'];
     $match->match_date = $validated['match_date'];
     $match->status = $validated['status'];
     $match->save();
 
-    // Aktualizacja wyniku dla uczestników
+
     foreach ($match->matchParticipants as $participant) {
         if ($match->status === 'played') {
             $participant->is_winner = ($validated['result'] === 'win') ? 1 : 0;
