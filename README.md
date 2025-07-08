@@ -3,7 +3,7 @@
 Welcome to **Social Networking Site for Gamers**!  
 This project is an online platform designed to connect gamers, foster communities, and make it easy to share achievements, discover new games, and interact with fellow enthusiasts.
 
-## 🚀 Features
+##  Features
 
 - User registration and authentication
 - Create and customize gamer profiles
@@ -12,7 +12,7 @@ This project is an online platform designed to connect gamers, foster communitie
 - Game discovery and recommendations
 - Event organization and participation
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 **Backend:**
 - PHP ^8.2
@@ -37,7 +37,7 @@ This project is an online platform designed to connect gamers, foster communitie
 
 > For more details, see the [package.json](https://github.com/DziedzicFilip/SocialNetworkingSiteForGamers/blob/main/SocialNetworkingSiteForGamers/package.json) and [composer.json](https://github.com/DziedzicFilip/SocialNetworkingSiteForGamers/blob/main/SocialNetworkingSiteForGamers/composer.json).
 
-## 💾 Installation
+##  Installation
 
 1. **Clone the repository:**
    ```bash
@@ -78,12 +78,11 @@ This project is an online platform designed to connect gamers, foster communitie
 
 6. Visit `http://localhost:8000` (or your configured port) in your browser.
 
-## 📸 Screenshots
 
-<!-- Add images/screenshots here if available -->
-<!-- ![Screenshot 1](screenshots/homepage.png) -->
 
-## 📚 Usage
+
+
+##  Usage
 
 1. Register a new account or sign in.
 2. Set up your gamer profile.
